@@ -1,4 +1,4 @@
-#include "zutils/_log.hpp"
+#include "zutils/log.hpp"
 
 #include <vector>
 #include <string>
@@ -82,23 +82,20 @@ inline void logging_vars_complex() {
   std::cout << std::endl;
 }
 
-// void test_function_tracing() {
-//   std::cout << "=== Testing Function Tracing ===" << std::endl;
+void test_function_tracing() {
+  ZTRACE;
+  std::cout << "=== Testing Function Tracing ===" << std::endl;
 
-//   ZTRACE("Entering test_function_tracing");
+  // Simulate some work
+  int result = 0;
+  for (int i = 0; i < 5; ++i) {
+    ZDBG("Loop iteration: {}", i);
+    result += i;
+  }
 
-//   // Simulate some work
-//   int result = 0;
-//   for (int i = 0; i < 5; ++i) {
-//     ZDBG("Loop iteration: {}", i);
-//     result += i;
-//   }
-
-//   ZDBG_EXPR(result);
-//   ZTRACE("Exiting test_function_tracing");
-
-//   std::cout << std::endl;
-// }
+  ZVAR(result);
+  std::cout << std::endl;
+}
 
 class TestClass {
 private:
