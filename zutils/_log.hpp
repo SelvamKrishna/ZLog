@@ -1,60 +1,16 @@
 #pragma once
 
-#include "./_common.hpp"
+#include "./zutils.hpp"
 
 #include <mutex>
 #include <iostream>
 #include <string_view>
 
-#if ENABLE_TIMESTAMP
-#include <chrono>
-#endif
-
-#ifndef USING_CUSTOM
-
-#define MIN_LOG_LVL_DEBUG      L_TRACE
-#define MIN_LOG_LVL_RELEASE    L_INFO
-
-#define TRACE_TAG    "[TRCE]"
-#define DEBUG_TAG    "[DEBG]"
-#define INFO_TAG     "[INFO]"
-#define WARN_TAG     "[WARN]"
-#define ERROR_TAG    "[ERRO]"
-#define FATAL_TAG    "[FATL]"
-
-#endif
-
 namespace zutils {
 
 namespace internal {
-
-#ifdef NDEBUG
-static constexpr LogLevel MIN_LOG_LEVEL = MIN_LOG_LVL_RELEASE;
-#else
-static constexpr LogLevel MIN_LOG_LEVEL = MIN_LOG_LVL_DEBUG;
-#endif
-
-static constexpr const char* LEVEL_STR[] {
-  TRACE_TAG,
-  DEBUG_TAG,
-  INFO_TAG,
-  WARN_TAG,
-  ERROR_TAG,
-  FATAL_TAG,
-};
-
-#if ENABLE_COLOR_CODE
-static constexpr const char* COLOR_TABLE[] {
-  "\033[90m",
-  "\033[36m",
-  "\033[32m",
-  "\033[33m",
-  "\033[31m",
-  "\033[41m",
-};
-#endif
-
-static std::ostream s_null_stream {nullptr};
+  static std::ostream s_null_stream {nullptr};
+}
 
 [[nodiscard]]
 static inline constexpr std::string_view openColor(LogLevel level) noexcept
@@ -111,8 +67,6 @@ inline LogGaurd logStream(LogLevel level)
   return "";
 #endif
 }
-
-} // namespace internal
 
 [[nodiscard]]
 static inline constexpr std::ostream& log(LogLevel lvl) {
