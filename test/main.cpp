@@ -1,19 +1,17 @@
 #include "zutils/zutils.hpp" // IWYU pragma: keep
 
-using namespace zutils;
-
 //-----------------------------------------------------
 // Log level tests
 //-----------------------------------------------------
 void test_log_levels() {
   ZTRACE;
 
-  ZLOGT << "Trace message";
-  ZLOGD << "Debug message";
-  ZLOGI << "Info message";
-  ZLOGW << "Warning message";
-  ZLOGE << "Error message";
-  ZLOGF << "Fatal message";
+  zutils::trace() << "Trace message";
+  zutils::debug() << "Debug message";
+  zutils::info()  << "Info message";
+  zutils::warn()  << "Warning message";
+  zutils::error() << "Error message";
+  zutils::fatal() << "Fatal message";
 }
 
 //-----------------------------------------------------
@@ -25,9 +23,9 @@ void test_conditional_logging() {
   bool debug_enabled = true;
   bool error_condition = false;
 
-  ZLOGD_IF(debug_enabled) << "This debug log should appear";
-  ZLOGE_IF(error_condition) << "This error log should NOT appear";
-  ZLOGW_IF(!error_condition) << "Warning printed because !error_condition == true";
+  zutils::traceIf(debug_enabled) << "This debug log should appear";
+  zutils::errorIf(error_condition) << "This error log should NOT appear";
+  zutils::warnIf(!error_condition) << "Warning printed because !error_condition == true";
 }
 
 //-----------------------------------------------------
@@ -139,16 +137,23 @@ void test_debug_and_release() {
 int main() {
   ZON_DEBUG {
     ZLOGI << "=== Warp Mini Logger Tests ===";
-    // test_log_levels();
-    // test_conditional_logging();
-    // test_var_logging();
-    // test_scope_tracing();
+
+    // LOGGING
+    test_conditional_logging();
+    test_var_logging();
+    test_scope_tracing();
+
+    // TESTING
     // test_ztest_macros();
-    test_assertions();
+    // test_assertions();
     // test_expections();
+
+    // DEV TOOLS
+
     // test_todo(); // kills process
     // test_unreachable(); // kills process
     // test_debug_and_release();
+
     ZLOGI << "=== All tests completed ===";
   }
 
