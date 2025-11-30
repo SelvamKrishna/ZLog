@@ -62,8 +62,8 @@ inline constexpr void _log(LogLevel lvl, std::format_string<Args...> f_str, Args
   if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
   internal::logStream(lvl).os
     << config::COLOR_RESET
-    << internal::getTimestamp()
-    << config::getLogLevel(lvl) << " : "
+    << ColorText{internal::getTimestamp(), 90} << config::TAG_TAG
+    << config::getLogLevel(lvl) << config::TAG_TAG
     << std::format(f_str, std::forward<Args>(args)...) << "\n";
 }
 
@@ -86,16 +86,16 @@ LOGGING_FN(fatal, LogLevel::Fatal)
 
 /// MACROS:
 
-#define ZDBG(...)    ::zutils::log::dbg  (__VA_ARGS__)
-#define ZINFO(...)   ::zutils::log::info (__VA_ARGS__)
-#define ZWARN(...)   ::zutils::log::warn (__VA_ARGS__)
-#define ZERR(...)    ::zutils::log::err  (__VA_ARGS__)
+#define   ZDBG(...)  ::zutils::log::dbg  (__VA_ARGS__)
+#define  ZINFO(...)  ::zutils::log::info (__VA_ARGS__)
+#define  ZWARN(...)  ::zutils::log::warn (__VA_ARGS__)
+#define   ZERR(...)  ::zutils::log::err  (__VA_ARGS__)
 #define ZFATAL(...)  ::zutils::log::fatal(__VA_ARGS__)
 
-#define ZDBG_IF(COND, ...)    do { if (COND) ::zutils::log::dbg  (__VA_ARGS__); } while (0)
-#define ZINFO_IF(COND, ...)   do { if (COND) ::zutils::log::info (__VA_ARGS__); } while (0)
-#define ZWARN_IF(COND, ...)   do { if (COND) ::zutils::log::warn (__VA_ARGS__); } while (0)
-#define ZERR_IF(COND, ...)    do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
+#define   ZDBG_IF(COND, ...)  do { if (COND) ::zutils::log::dbg  (__VA_ARGS__); } while (0)
+#define  ZINFO_IF(COND, ...)  do { if (COND) ::zutils::log::info (__VA_ARGS__); } while (0)
+#define  ZWARN_IF(COND, ...)  do { if (COND) ::zutils::log::warn (__VA_ARGS__); } while (0)
+#define   ZERR_IF(COND, ...)  do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
 #define ZFATAL_IF(COND, ...)  do { if (COND) ::zutils::log::fatal(__VA_ARGS__); } while (0)
 
-#define ZDBG_EXPR(EXPR)  ZDBG("{} = {}", #EXPR, (EXPR) ? "True" : "False")
+#define ZVAR(VAR)   ZDBG("({}) = {}", ::zutils::ColorText{#VAR, 35}, (VAR))

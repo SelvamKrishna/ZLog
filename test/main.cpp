@@ -1,13 +1,17 @@
-#include "zutils/_log.hpp"
+#include "test/logging.hpp"
 
 //-----------------------------------------------------
 // Entry point
 //-----------------------------------------------------
 int main() {
-  ZDBG("Hwllo {}", 1);
-  ZDBG_IF(true, "Bye1");
-  ZDBG_IF(false, "Bye2");
-  ZDBG_EXPR(1 == 1);
+
+  test::logging_basic();
+  test::logging_args();
+  test::logging_cond();
+  test::logging_vars();
+  test::logging_vars_complex();
+  test::logging_class();
+  test::logging_edge_cases();
 
   return 0;
 }

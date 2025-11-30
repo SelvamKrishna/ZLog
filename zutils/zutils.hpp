@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <ostream>
 #include <string_view>
 
@@ -50,6 +51,7 @@ static constexpr std::string_view SCOPE_LEAVE_TAG = "}--";
 
 static constexpr std::string_view COLOR_RESET = "\033[0m";
 static constexpr std::string_view TAB_TAG     = "  ";
+static constexpr std::string_view TAG_TAG     = " : ";
 
 /// Platform detection
 #ifdef _WIN32
@@ -77,3 +79,14 @@ inline std::ostream& operator<<(std::ostream& os, const ColorText& ct)
 }
 
 } // namespace zutils
+
+template<>
+struct std::formatter<zutils::ColorText> {
+  constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
+
+  auto format(const zutils::ColorText &ct, std::format_context &ctx) const {
+    return (zutils::config::ENABLE_COLOR)
+    ? std::format_to(ctx.out(), "\033[{}m{}\033[0m", ct.COLOR, ct.TEXT)
+    : std::format_to(ctx.out(), "{}", ct.TEXT);
+  }
+};
