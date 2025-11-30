@@ -1,4 +1,4 @@
-#include "zutils/zutils.hpp"
+#include "zutils/zutils.hpp" // IWYU pragma: keep
 
 using namespace zutils;
 
@@ -152,10 +152,13 @@ void run_all_tests() {
 // Entry point
 //-----------------------------------------------------
 int main() {
-  ZLOGI << "=== Warp Mini Logger Tests ===";
+  ZON_RELEASE {
+    ZLOGI << "=== Warp Mini Logger Tests ===";
 
-  run_all_tests();
+    run_all_tests();
 
-  ZLOGI << "=== All tests completed ===";
+    ZLOGI << "=== All tests completed ===";
+  }
+
   return 0;
 }

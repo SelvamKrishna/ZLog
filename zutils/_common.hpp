@@ -37,4 +37,10 @@ static ResetTerminal s_reset_terminal {};
 
 [[noreturn]] static inline void killProcess() noexcept { std::abort(); }
 
+#ifdef NDEBUG
+static inline constexpr bool IS_MODE_DEBUG {false};
+#else
+static inline constexpr bool IS_MODE_DEBUG {true};
+#endif
+
 }

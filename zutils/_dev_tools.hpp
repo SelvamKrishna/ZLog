@@ -28,3 +28,9 @@
 } while(0)
 
 #endif
+
+#define ZON_DEBUG \
+  if constexpr (zutils::internal::IS_MODE_DEBUG)
+
+#define ZON_RELEASE \
+  if constexpr (!zutils::internal::IS_MODE_DEBUG)
