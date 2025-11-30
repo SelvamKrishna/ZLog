@@ -3,54 +3,44 @@
 #include "./zutils.hpp"
 
 #include <mutex>
+#include <format>
+#include <utility>
 #include <iostream>
 #include <string_view>
+#include <chrono>
+#include <ctime>
 
-namespace zutils {
+namespace zutils::log {
 
 namespace internal {
-  static std::ostream s_null_stream {nullptr};
-}
 
-[[nodiscard]]
-static inline constexpr std::string_view openColor(LogLevel level) noexcept
-{
-#if ENABLE_COLOR_CODE
-  return COLOR_TABLE[level];
-#else
-  return "";
-#endif
-}
+static std::ostream s_null_stream {nullptr};
 
-[[nodiscard]]
-static inline constexpr const char* closeColor() noexcept
-{
-#if ENABLE_COLOR_CODE
-  return "\033[0m : ";
-#else
-  return " : ";
-#endif
-}
-
-struct LogGaurd {
+struct LogGuard {
   std::scoped_lock<std::mutex> lock;
   std::ostream&                os;
 };
 
-inline LogGaurd logStream(LogLevel level)
+[[nodiscard]]
+inline LogGuard logStream(LogLevel level) noexcept
 {
   static std::mutex s_log_mutex {};
 
-  return LogGaurd {
+  return LogGuard {
     .lock = std::scoped_lock {s_log_mutex},
-    .os   = (level < L_WARN) ? std::cout : std::cerr,
+    .os   = (
+      static_cast<int>(level) < static_cast<int>(LogLevel::Warn)
+    ) ? std::cout : std::cerr,
   };
 }
 
-[[nodiscard]] static inline std::string_view getTimestamp() noexcept
+[[nodiscard]]
+static inline std::string_view getTimestamp() noexcept
 {
-#if ENABLE_TIMESTAMP
-  std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  if constexpr (!config::ENABLE_TIMESTAMP) return "";
+
+  auto now = std::chrono::system_clock::now();
+  std::time_t t = std::chrono::system_clock::to_time_t(now);
   std::tm tm_struct{};
 
   thread_local char buf[sizeof("[HH:MM:SS]")] {};
@@ -63,78 +53,49 @@ inline LogGaurd logStream(LogLevel level)
 
   std::strftime(buf, sizeof(buf), "[%H:%M:%S]", &tm_struct);
   return buf;
-#else
-  return "";
-#endif
 }
 
-[[nodiscard]]
-static inline constexpr std::ostream& log(LogLevel lvl) {
-#if DISABLE_LOGGING
-  return internal::s_null_stream;
-#else
-  return (lvl >= internal::MIN_LOG_LEVEL)
-  ? internal::logStream(lvl).os
-    << "\n"
-    << internal::openColor(lvl) << internal::getTimestamp()
-    << internal::LEVEL_STR[lvl] << internal::closeColor()
-  : internal::s_null_stream;
-#endif
+} // namespace internal
+
+template <typename... Args>
+inline constexpr void _log(LogLevel lvl, std::format_string<Args...> f_str, Args&&... args) {
+  if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
+  internal::logStream(lvl).os
+    << config::COLOR_RESET
+    << internal::getTimestamp()
+    << config::getLogLevel(lvl) << " : "
+    << std::format(f_str, std::forward<Args>(args)...) << "\n";
 }
 
-[[nodiscard]] static inline constexpr std::ostream& trace() { return log(L_TRACE); }
-[[nodiscard]] static inline constexpr std::ostream& debug() { return log(L_DEBUG); }
-[[nodiscard]] static inline constexpr std::ostream& info () { return log(L_INFO) ; }
-[[nodiscard]] static inline constexpr std::ostream& warn () { return log(L_WARN) ; }
-[[nodiscard]] static inline constexpr std::ostream& error() { return log(L_ERROR); }
-[[nodiscard]] static inline constexpr std::ostream& fatal() { return log(L_FATAL); }
+#define LOGGING_FN(FN_NAME, LOG_LVL) \
+  template <typename... Args> \
+  inline constexpr void FN_NAME(std::format_string<Args...> f_str, Args&&... args) \
+  { \
+    _log(LOG_LVL, f_str, std::forward<Args>(args)...); \
+  }
 
-[[nodiscard]]
-static inline constexpr std::ostream& logIf(LogLevel lvl, bool condition) {
-if (!condition) return internal::s_null_stream;
+LOGGING_FN(dbg  , LogLevel::Debug)
+LOGGING_FN(info , LogLevel::Info)
+LOGGING_FN(warn , LogLevel::Warn)
+LOGGING_FN(err  , LogLevel::Error)
+LOGGING_FN(fatal, LogLevel::Fatal)
 
-#if DISABLE_LOGGING
-  return internal::s_null_stream;
-#else
-  return (lvl >= internal::MIN_LOG_LEVEL)
-  ? internal::logStream(lvl).os
-    << "\n"
-    << internal::openColor(lvl) << internal::getTimestamp()
-    << internal::LEVEL_STR[lvl] << internal::closeColor()
-  : internal::s_null_stream;
-#endif
-}
-
-[[nodiscard]] static inline constexpr std::ostream& traceIf(bool condition) { return logIf(L_TRACE, condition); }
-[[nodiscard]] static inline constexpr std::ostream& debugIf(bool condition) { return logIf(L_DEBUG, condition); }
-[[nodiscard]] static inline constexpr std::ostream& infoIf (bool condition) { return logIf(L_INFO , condition); }
-[[nodiscard]] static inline constexpr std::ostream& warnIf (bool condition) { return logIf(L_WARN , condition); }
-[[nodiscard]] static inline constexpr std::ostream& errorIf(bool condition) { return logIf(L_ERROR, condition); }
-[[nodiscard]] static inline constexpr std::ostream& fatalIf(bool condition) { return logIf(L_FATAL, condition); }
+#undef LOGGING_FN
 
 } // namespace zutils
 
-#define ZLOGT  zutils::log(L_TRACE)
-#define ZLOGD  zutils::log(L_DEBUG)
-#define ZLOGI  zutils::log(L_INFO)
-#define ZLOGW  zutils::log(L_WARN)
-#define ZLOGE  zutils::log(L_ERROR)
-#define ZLOGF  zutils::log(L_FATAL)
+/// MACROS:
 
-#define ZLOG_V(VALUE) \
-  ZLOGD << zutils::internal::ColorText {35, #VALUE} << " = " << (VALUE)
+#define ZDBG(...)    ::zutils::log::dbg  (__VA_ARGS__)
+#define ZINFO(...)   ::zutils::log::info (__VA_ARGS__)
+#define ZWARN(...)   ::zutils::log::warn (__VA_ARGS__)
+#define ZERR(...)    ::zutils::log::err  (__VA_ARGS__)
+#define ZFATAL(...)  ::zutils::log::fatal(__VA_ARGS__)
 
-#define ZLOG_IF(LVL, CONDITION) \
-  if (CONDITION) ZLOG(LVL)
+#define ZDBG_IF(COND, ...)    do { if (COND) ::zutils::log::dbg  (__VA_ARGS__); } while (0)
+#define ZINFO_IF(COND, ...)   do { if (COND) ::zutils::log::info (__VA_ARGS__); } while (0)
+#define ZWARN_IF(COND, ...)   do { if (COND) ::zutils::log::warn (__VA_ARGS__); } while (0)
+#define ZERR_IF(COND, ...)    do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
+#define ZFATAL_IF(COND, ...)  do { if (COND) ::zutils::log::fatal(__VA_ARGS__); } while (0)
 
-#define ZLOGT_IF(CONDITION)  ZLOG_IF(L_TRACE, CONDITION)
-#define ZLOGD_IF(CONDITION)  ZLOG_IF(L_DEBUG, CONDITION)
-#define ZLOGI_IF(CONDITION)  ZLOG_IF(L_INFO , CONDITION)
-#define ZLOGW_IF(CONDITION)  ZLOG_IF(L_WARN , CONDITION)
-#define ZLOGE_IF(CONDITION)  ZLOG_IF(L_ERROR, CONDITION)
-#define ZLOGF_IF(CONDITION)  ZLOG_IF(L_FATAL, CONDITION)
-
-#define ZLOG_RAW \
-  std::cout << "\n\033[0m"
-
-#define ZTAB  TAB_TAG
+#define ZDBG_EXPR(EXPR)  ZDBG("{} = {}", #EXPR, (EXPR) ? "True" : "False")

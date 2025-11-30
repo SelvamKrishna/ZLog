@@ -7,11 +7,15 @@ namespace zutils {
 
 enum class LogLevel : uint8_t { Trace, Debug, Info, Warn, Error, Fatal, };
 
-} // namespace zutils
+struct ColorText {
+  const std::string_view TEXT;
+  const int              COLOR;
+};
 
 /// MODIFY: Change variables
-namespace zutils::config {
+namespace config {
 
+/// Utility flags
 static constexpr LogLevel MIN_LVL_RLS = LogLevel::Info;
 static constexpr LogLevel MIN_LVL_DBG = LogLevel::Trace;
 
@@ -26,26 +30,12 @@ static constexpr LogLevel MIN_LEVEL     = MIN_LVL_DBG;
 static constexpr bool     IS_MODE_DEBUG = true;
 #endif
 
-/// Compile-time configuration
 static constexpr bool DISABLE_LOGGING   = false;
 static constexpr bool ENABLE_TIMESTAMP  = true;
 static constexpr bool ENABLE_COLOR      = true;
 static constexpr bool ENABLE_TRACE_DULL = true;
 
 /// Tags
-
-struct ColorText {
-  const std::string_view TEXT;
-  const int              COLOR;
-};
-
-inline std::ostream& operator<<(std::ostream& os, const ColorText& ct)
-{
-  return (ENABLE_COLOR)
-  ? os << "\033[" << ct.COLOR << "m" << ct.TEXT << "\033[0m"
-  : os << ct.TEXT;
-}
-
 static constexpr ColorText TAG_CTX[] = {
   {"[TRCE]", 90},
   {"[DEBG]", 36},
@@ -69,6 +59,21 @@ static constexpr bool IS_WINDOWS = false;
 #endif
 
 [[noreturn]]
-static inline void killProcess() noexcept { std::abort(); }
+inline void killProcess() noexcept { std::abort(); }
 
-} // namespace zutils::config
+[[nodiscard]]
+constexpr inline const ColorText& getLogLevel(LogLevel lvl) noexcept
+{
+  return TAG_CTX[static_cast<int>(lvl)];
+}
+
+} // namespace config
+
+inline std::ostream& operator<<(std::ostream& os, const ColorText& ct)
+{
+  return (config::ENABLE_COLOR)
+  ? os << "\033[" << ct.COLOR << "m" << ct.TEXT << "\033[0m"
+  : os << ct.TEXT;
+}
+
+} // namespace zutils
