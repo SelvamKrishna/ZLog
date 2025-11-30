@@ -31,22 +31,31 @@ static constexpr const char* FAIL {TEST_FAIL_TEXT};
 #define ZTEST_EQ(ACTUAL, EXPECTED)  ZTEST((ACTUAL) == (EXPECTED))
 #define ZTEST_NE(ACTUAL, EXPECTED)  ZTEST((ACTUAL) != (EXPECTED))
 
+#ifdef NDEBUG
+
 #define ZVALIDATE(CONDITION, TAG, KILL_FLAG) do {  \
-    if (!(CONDITION)) {                            \
-      if constexpr (KILL_FLAG) {                   \
-        ZLOGF                                      \
-          << zutils::internal::ColorText{41, TAG}  \
-          << " : " #CONDITION;                     \
-        zutils::internal::killProcess();           \
-      } else {                                     \
-        ZLOGE                                      \
-          << zutils::internal::ColorText{31, TAG}  \
-          << " : " #CONDITION;                     \
-      }                                            \
-    }                                              \
 } while (0)
 
-#define ZASSERT(CONDITION)  ZVALIDATE(CONDITION, ASSERT_TAG, true)
+#else
+
+#define ZVALIDATE(CONDITION, TAG, KILL_FLAG) do {  \
+  if (!(CONDITION)) {                              \
+    if constexpr (KILL_FLAG) {                     \
+      ZLOGF                                        \
+        << zutils::internal::ColorText{41, TAG}    \
+        << " : " #CONDITION << "\n";               \
+      zutils::internal::killProcess();             \
+    } else {                                       \
+      ZLOGE                                        \
+        << zutils::internal::ColorText{31, TAG}    \
+        << " : " #CONDITION;                       \
+    }                                              \
+  }                                                \
+} while (0)
+
+#endif
+
+#define ZASSERT(CONDITION)  ZVALIDATE(CONDITION, "::", true)
 #define ZASSERT_EQ(ACTUAL, EXPECTED)  ZASSERT((ACTUAL) == (EXPECTED))
 #define ZASSERT_NE(ACTUAL, EXPECTED)  ZASSERT((ACTUAL) != (EXPECTED))
 

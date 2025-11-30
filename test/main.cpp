@@ -64,7 +64,7 @@ void test_scope_tracing() {
 //-----------------------------------------------------
 // Basic tests (PASS/FAIL style output)
 //-----------------------------------------------------
-void test_wtest_macros() {
+void test_ztest_macros() {
   ZTRACE;
 
   int a = 5, b = 5, c = 10;
@@ -90,17 +90,7 @@ void test_assertions() {
   ZASSERT_EQ(x, 42);    // should pass
 
   // Uncomment to test failure:
-  // ZASSERT_NE(x, 42);  // will abort program
-}
-
-//-----------------------------------------------------
-// Stress test: multiple log calls
-//-----------------------------------------------------
-void test_massive_logging() {
-  ZTRACE;
-  for (int i = 0; i < 5; ++i) {
-    ZLOGI << "Iteration " << i;
-  }
+  ZASSERT_NE(x, 42);  // will abort program
 }
 
 //-----------------------------------------------------
@@ -114,7 +104,7 @@ void test_expections() {
   ZEXPECT_EQ(x, 42);    // should pass
 
   // Uncomment to test failure:
-  ZEXPECT_NE(x, 42);
+  // ZEXPECT_NE(x, 42);
 }
 
 //-----------------------------------------------------
@@ -122,7 +112,7 @@ void test_expections() {
 //-----------------------------------------------------
 void test_todo() {
   ZTRACE;
-  ZTODO("This function needs to be implemented (TODO) example");
+  ZTODO("This function needs to be implemented");
 }
 
 //-----------------------------------------------------
@@ -134,29 +124,31 @@ void test_unreachable() {
 }
 
 //-----------------------------------------------------
-// Run all tests
+// Debug and Release mode dev tools
 //-----------------------------------------------------
-void run_all_tests() {
+void test_debug_and_release() {
   ZTRACE;
-  test_log_levels();
-  test_conditional_logging();
-  test_var_logging();
-  test_scope_tracing();
-  test_wtest_macros();
-  test_assertions();
-  test_massive_logging();
-  test_expections();
+
+  ZON_DEBUG ZLOGI   << "Text will print on Debug Mode";
+  ZON_RELEASE ZLOGI << "Text will print on Release Mode";
 }
 
 //-----------------------------------------------------
 // Entry point
 //-----------------------------------------------------
 int main() {
-  ZON_RELEASE {
+  ZON_DEBUG {
     ZLOGI << "=== Warp Mini Logger Tests ===";
-
-    run_all_tests();
-
+    // test_log_levels();
+    // test_conditional_logging();
+    // test_var_logging();
+    // test_scope_tracing();
+    // test_ztest_macros();
+    test_assertions();
+    // test_expections();
+    // test_todo(); // kills process
+    // test_unreachable(); // kills process
+    // test_debug_and_release();
     ZLOGI << "=== All tests completed ===";
   }
 

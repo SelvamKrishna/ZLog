@@ -34,6 +34,7 @@
 #define EXPECT_TAG              "[EXPC]"
 #define TODO_TAG                "[TODO]"
 #define UNREACHABLE_TAG         "[UNRC]"
+#define TAB_TAG                 "  "
 
 // Do Not Touch
 #define USING_CUSTOM
