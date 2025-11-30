@@ -1,56 +1,46 @@
 #pragma once
 
+#include "./config.hpp"
 #include "./log.hpp"
 
+#include <format>
 #include <string>
-#include <string_view>
 
-#ifndef USING_CUSTOM
-
-#define SCOPE_ENTER_TEXT    "--{"
-#define SCOPE_LEAVE_TEXT    "}--"
-
-#endif
-
-namespace zutils::internal {
+namespace zutils::trace::internal {
 
 struct ScopeTracer {
-  const std::string FN_NAME;
+  const std::string _STR_TEXT;
+  const ColorText   TEXT;
 
-#if ENABLE_COLOR_CODE
-  static constexpr const char* ENTER_TEXT {"\033[92m" SCOPE_ENTER_TAG "\033[0m"};
-  static constexpr const char* LEAVE_TEXT {"\033[91m" SCOPE_LEAVE_TAG "\033[0m"};
-#else
-  static constexpr const char* ENTER_TEXT {SCOPE_ENTER_TEXT};
-  static constexpr const char* LEAVE_TEXT {SCOPE_LEAVE_TEXT};
-#endif
+  static constexpr ColorText ENTER_TAG = {config::SCOPE_ENTER_TAG, 92};
+  static constexpr ColorText LEAVE_TAG = {config::SCOPE_LEAVE_TAG, 91};
 
-  explicit ScopeTracer(std::string_view fn_name) : FN_NAME {fn_name} {
-    ZLOGT << ENTER_TEXT << " : " << FN_NAME;
+  constexpr explicit ScopeTracer(std::string text)
+    : _STR_TEXT {std::move(text)}
+    , TEXT      {_STR_TEXT ,(config::ENABLE_TRACE_DULL) ? 90 : 0}
+  {
+    log::_log(
+      LogLevel::Trace,
+      "{}{}{}", ENTER_TAG, config::TAG_TAG, TEXT
+    );
   }
 
-  ~ScopeTracer() {
-    ZLOGT << LEAVE_TEXT << " : " << FN_NAME;
+  ~ScopeTracer()
+  {
+    log::_log(
+      LogLevel::Trace,
+      "{}{}{}", LEAVE_TAG, config::TAG_TAG, TEXT
+    );
   }
-
 };
 
-} // namespace zutils::internal
+} // namespace zutils::trace::internal
 
-#if ((ENABLE_COLOR_CODE) && (ENABLE_TRACE_DULL))
+/// MACROS:
 
-#define ZTRACE \
-  zutils::internal::ScopeTracer __trace {std::format("\033[90m{}()\033[0m", __FUNCTION__)}
+#define ZTRC_ANON \
+  ::zutils::trace::internal::ScopeTracer ZTRACE_tracer_##__COUNTER__
 
-#define ZTRACE_C(CLASS) \
-  zutils::internal::ScopeTracer __trace {std::format("\033[90m{}::{}()\033[0m", #CLASS, __FUNCTION__)}
-
-#else
-
-#define ZTRACE \
-  zutils::internal::ScopeTracer __trace {std::format("{}()", __FUNCTION__)}
-
-#define ZTRACE_C(CLASS) \
-  zutils::internal::ScopeTracer __trace {std::format("{}::{}()", #CLASS, __FUNCTION__)}
-
-#endif
+#define ZTRC         ZTRC_ANON {std::format("{}()", __FUNCTION__)}
+#define ZTRC_C(CLS)  ZTRC_ANON {std::format("{}::{}", #CLS, __FUNCTION__)}
+#define ZTRC_S(DSC)  ZTRC_ANON {DSC}

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "zutils/log.hpp"
 
 #include <vector>
@@ -5,7 +7,7 @@
 
 namespace test {
 
-inline void logging_basic() {
+inline void log_basic() {
   std::cout << "=== Testing Basic Logging ===" << std::endl;
 
   // Test all log levels
@@ -18,7 +20,7 @@ inline void logging_basic() {
   std::cout << std::endl;
 }
 
-inline void logging_args() {
+inline void log_args() {
   std::cout << "=== Testing Logging with Arguments ===" << std::endl;
 
   int number = 42;
@@ -33,7 +35,7 @@ inline void logging_args() {
   std::cout << std::endl;
 }
 
-inline void logging_cond() {
+inline void log_cond() {
   std::cout << "=== Testing Conditional Logging ===" << std::endl;
 
   bool condition_true = true;
@@ -48,7 +50,7 @@ inline void logging_cond() {
   std::cout << std::endl;
 }
 
-inline void logging_vars() {
+inline void log_vars() {
   std::cout << "=== Testing Expression Debugging ===" << std::endl;
 
   int x = 10;
@@ -66,7 +68,7 @@ inline void logging_vars() {
   std::cout << std::endl;
 }
 
-inline void logging_vars_complex() {
+inline void log_vars_complex() {
   std::cout << "=== Testing Complex Types ===" << std::endl;
 
   std::vector<int> numbers = {1, 2, 3, 4, 5};
@@ -82,27 +84,12 @@ inline void logging_vars_complex() {
   std::cout << std::endl;
 }
 
-void test_function_tracing() {
-  ZTRACE;
-  std::cout << "=== Testing Function Tracing ===" << std::endl;
-
-  // Simulate some work
-  int result = 0;
-  for (int i = 0; i < 5; ++i) {
-    ZDBG("Loop iteration: {}", i);
-    result += i;
-  }
-
-  ZVAR(result);
-  std::cout << std::endl;
-}
-
-class TestClass {
+class LogTestClass {
 private:
   int value_;
 
 public:
-  TestClass(int v) : value_(v) {
+  LogTestClass(int v) : value_(v) {
     ZDBG("TestClass constructor called with value: {}", value_);
   }
 
@@ -114,10 +101,10 @@ public:
   void display() const { ZINFO("TestClass value: {}", value_); }
 };
 
-inline void logging_class() {
+inline void log_class() {
   std::cout << "=== Testing Class Logging ===" << std::endl;
 
-  TestClass obj(100);
+  LogTestClass obj(100);
   obj.display();
   obj.set_value(200);
   obj.display();
@@ -125,7 +112,7 @@ inline void logging_class() {
   std::cout << std::endl;
 }
 
-inline void logging_edge_cases() {
+inline void log_edge_case() {
   std::cout << "=== Testing Edge Cases ===" << std::endl;
 
   // Empty message
@@ -142,6 +129,16 @@ inline void logging_edge_cases() {
        "additional information here");
 
   std::cout << std::endl;
+}
+
+inline void log_all() {
+  test::log_basic();
+  test::log_args();
+  test::log_cond();
+  test::log_vars();
+  test::log_vars_complex();
+  test::log_class();
+  test::log_edge_case();
 }
 
 } // namespace test
