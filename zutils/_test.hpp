@@ -1,32 +1,30 @@
 #pragma once
 
-#include "./_log.hpp"
+#include "./config.hpp"
+#include "./log.hpp"
 
-#ifndef USING_CUSTOM
+#include <iostream>
 
-#define TEST_PASS_TEXT    "[PASS]"
-#define TEST_FAIL_TEXT    "[FAIL]"
+namespace zutils::test {
 
-#endif
+inline void defaultUnit(bool condition, std::string_view desc) noexcept
+{
+  std::cout
+    << config::TEST_TAG << config::TAG_TAG
+    << (condition ? config::PASS_TAG : config::FAIL_TAG)
+    << config::TAG_TAG << desc << "\n";
+}
 
-namespace zutils::internal {
+inline void check(bool condition, std::string_view desc) noexcept
+{
 
-#if ENABLE_COLOR_CODE
-static constexpr const char* PASS {"\033[32m" TEST_PASS_TAG "\033[0m"};
-static constexpr const char* FAIL {"\033[31m" TEST_FAIL_TAG "\033[0m"};
-#else
-static constexpr const char* PASS {TEST_PASS_TEXT};
-static constexpr const char* FAIL {TEST_FAIL_TEXT};
-#endif
+  if (condition) return;
+  ZWARN("");
+}
 
-} // namespace zutils::internal
+} // namespace zutils::test
 
-#define ZTEST(CONDITION) do {                                           \
-  ZLOG_RAW                                                              \
-    << zutils::internal::ColorText{34, TEST_TAG}                        \
-    << ((CONDITION) ? zutils::internal::PASS : zutils::internal::FAIL)  \
-    << " : " #CONDITION;                                                \
-} while (0)
+#define ZTEST(CONDITION)  ::zutils::test::defaultUnit((CONDITION), #CONDITION)
 
 #define ZTEST_EQ(ACTUAL, EXPECTED)  ZTEST((ACTUAL) == (EXPECTED))
 #define ZTEST_NE(ACTUAL, EXPECTED)  ZTEST((ACTUAL) != (EXPECTED))

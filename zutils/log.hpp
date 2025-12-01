@@ -62,7 +62,7 @@ inline constexpr void _log(LogLevel lvl, std::format_string<Args...> f_str, Args
   if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
   internal::logStream(lvl).os
     << config::COLOR_RESET
-    << ColorText{internal::getTimestamp(), 90} << config::TAG_TAG
+    << ColorText{internal::getTimestamp(), ANSI::EX_Black} << config::TAG_TAG
     << config::getLogLevel(lvl) << config::TAG_TAG
     << std::format(f_str, std::forward<Args>(args)...) << "\n";
 }
@@ -98,4 +98,4 @@ LOGGING_FN(fatal, LogLevel::Fatal)
 #define   ZERR_IF(COND, ...)  do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
 #define ZFATAL_IF(COND, ...)  do { if (COND) ::zutils::log::fatal(__VA_ARGS__); } while (0)
 
-#define ZVAR(VAR)   ZDBG("({}) = {}", ::zutils::ColorText{#VAR, 35}, (VAR))
+#define ZVAR(VAR)   ZDBG("({}) = {}", ::zutils::ColorText{#VAR, ::zutils::ANSI::Magenta}, (VAR))

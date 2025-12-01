@@ -12,16 +12,13 @@ struct ScopeTracer {
   const std::string _STR_TEXT;
   const ColorText   TEXT;
 
-  static constexpr ColorText ENTER_TAG = {config::SCOPE_ENTER_TAG, 92};
-  static constexpr ColorText LEAVE_TAG = {config::SCOPE_LEAVE_TAG, 91};
-
   constexpr explicit ScopeTracer(std::string text)
     : _STR_TEXT {std::move(text)}
-    , TEXT      {_STR_TEXT ,(config::ENABLE_TRACE_DULL) ? 90 : 0}
+    , TEXT      {_STR_TEXT ,(config::ENABLE_TRACE_DULL) ? ANSI::EX_Black : ANSI::Reset}
   {
     log::_log(
       LogLevel::Trace,
-      "{}{}{}", ENTER_TAG, config::TAG_TAG, TEXT
+      "{}{}{}", config::SCOPE_ENTER_TAG, config::TAG_TAG, TEXT
     );
   }
 
@@ -29,7 +26,7 @@ struct ScopeTracer {
   {
     log::_log(
       LogLevel::Trace,
-      "{}{}{}", LEAVE_TAG, config::TAG_TAG, TEXT
+      "{}{}{}", config::SCOPE_LEAVE_TAG, config::TAG_TAG, TEXT
     );
   }
 };

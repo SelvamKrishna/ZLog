@@ -30,7 +30,7 @@ inline void log_args() {
   ZDBG("Number: {}, Text: {}, Pi: {:.2f}", number, text, pi);
   ZINFO("The answer is {}", number);
   ZWARN("Value {} is suspicious", number * 2);
-  ZERR("Value {} is suspicious", zutils::ColorText {"SOMETHING", 31});
+  ZERR("Value {} is suspicious", zutils::ColorText {"SOMETHING", zutils::ANSI::BG_EX_Magenta});
 
   std::cout << std::endl;
 }
