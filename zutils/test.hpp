@@ -126,15 +126,16 @@ inline void require(bool condition, std::string_view expr, std::string_view desc
 }
 
 /// Panic with message (always fatal)
+#ifndef ZUTILS_T
 [[noreturn]]
+#endif
 inline void panic(std::string_view desc, SourceLoc loc = {}) noexcept
 {
   ZFATAL(internal::_fmtSimpleStr(config::PANIC_TAG, desc, loc));
+#ifndef ZUTILS_T
   config::killProcess();
+#endif
 }
-
-#undef _SIMPLE_MSG
-#undef _COMPLX_MSG
 
 } // namespace zutils::test
 

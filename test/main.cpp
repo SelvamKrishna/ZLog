@@ -1,11 +1,9 @@
 #include "zutils/log.hpp"
 #include "zutils/test.hpp"
 #include "zutils/trace.hpp"
+#include "zutils/tools.hpp"
 
 
-// -----------------------------------------------------------
-// LOGGING DEMO
-// -----------------------------------------------------------
 namespace demo_log {
 
 void run() {
@@ -27,9 +25,6 @@ void run() {
 
 } // namespace demo_log
 
-// -----------------------------------------------------------
-// TRACING DEMO
-// -----------------------------------------------------------
 namespace demo_trace {
 
 void simple() {
@@ -87,9 +82,6 @@ void run() {
 
 } // namespace demo_trace
 
-// -----------------------------------------------------------
-// TEST / ASSERTION DEMO
-// -----------------------------------------------------------
 namespace demo_test {
 
 void run() {
@@ -129,12 +121,39 @@ void run() {
 
 } // namespace demo_test
 
-// -----------------------------------------------------------
-// MAIN
-// -----------------------------------------------------------
+namespace demo_tools {
+
+void run()
+{
+
+  ZOUT << "\n--- CAUTION EXAMPLES ---\n";
+
+  ZTODO("Implement proper input validation");
+  ZDEPRECATED("This function will be removed in the next release");
+  ZOPTIMIZE("Loop can be vectorized for better performance");
+  ZSECURITY("Check user authentication before proceeding");
+  ZPERFORMANCE("Consider caching results to reduce computation");
+
+  ZOUT << "\n--- CRITICAL EXAMPLES ---\n";
+
+  // The following normally abort, but in demo/testing builds
+  // killProcess() can be no-op for showcase purposes.
+  ZUNREACHABLE("Reached supposedly unreachable code block");
+  ZUNIMPLEMENTED("This feature is not implemented yet");
+  ZFIXME("Fix edge case when input is negative");
+  ZMEMORY("Detected potential memory leak in buffer allocation");
+  ZTHREAD_SAFETY("Potential data race detected on shared resource");
+
+  ZOUT << "\n--- SHOWCASE COMPLETE ---\n";
+}
+
+} // namespace demo_tools
+
 int main() {
   demo_log  ::run();
   demo_trace::run();
   demo_test ::run();
+  demo_tools::run();
+
   return 0;
 }

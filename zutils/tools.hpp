@@ -55,10 +55,10 @@ inline void caution(
   );
 }
 
-// ==================== CRITICAL (Fatal) ====================
-
 template <typename... Args>
+#ifndef ZUTILS_T
 [[noreturn]]
+#endif
 inline void critical(
   CriticalCode                code,
   SourceLoc                   loc,
@@ -74,8 +74,9 @@ inline void critical(
     config::TAG_TAG,
     std::format(f_str, std::forward<Args>(args)...)
   );
-
+#ifndef ZUTILS_T
   config::killProcess();
+#endif
 }
 
 } // namespace zutils::tools
