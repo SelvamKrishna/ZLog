@@ -10,18 +10,18 @@ namespace zutils::test {
 #define  _TAG(TAG)   (TAG) << config::TAG_TAG
 #define _EXPR(EXPR)  ColorText{(EXPR), ANSI::Magenta}
 
-#define _SIMPLE_MSG(TAG)                        \
-  "{}{}{}{}{}",                                 \
-  (TAG), config::TAG_TAG,                       \
-  ColorText{desc, ANSI::Bold}, config::TAG_TAG, \
-  loc                                           \
+#define _SIMPLE_MSG(TAG)      \
+  "{}{}{}{}{}",               \
+  (TAG), config::TAG_TAG,     \
+  loc, config::TAG_TAG,       \
+  ColorText{desc, ANSI::Bold} \
 
 #define _COMPLX_MSG(TAG)                           \
   "{}{}{}{}{}{}",                                  \
   (TAG), config::TAG_TAG,                          \
+  loc, config::TAG_TAG,                            \
   ColorText{expr, ANSI::Magenta}, config::TAG_TAG, \
-  ColorText{desc, ANSI::Bold}, config::TAG_TAG,    \
-  loc                                              \
+  ColorText{desc, ANSI::Bold}                      \
 
 /// Unit test assertion (always runs in tests)
 
@@ -94,6 +94,7 @@ inline void require(bool condition, std::string_view expr, std::string_view desc
 }
 
 /// Panic with message (always fatal)
+[[noreturn]]
 inline void panic(std::string_view desc, SourceLoc loc = {}) noexcept
 {
   ZFATAL(_SIMPLE_MSG(config::PANIC_TAG));

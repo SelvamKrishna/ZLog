@@ -1,47 +1,101 @@
 #pragma once
 
-#include "./log.hpp"  // IWYU pragma: keep
-#include "./test.hpp" // IWYU pragma: keep
+#include "./config.hpp"
+#include "./log.hpp"
 
-namespace zutils::tools {} // namespace zutils::tools
-/// Mark incomplete code - warning level
-#define ZTODO(...) ::zutils::log::warn("TODO: " __VA_ARGS__ " {}", ZLOC)
+namespace zutils::tools {
 
-/// Mark code that should never be reached - fatal
-#define ZUNREACHABLE(MSG)                                                      \
-  ::zutils::test::panic(MSG, ZLOC)
+enum class CautionCode : uint8_t {
+  Todo,
+  Deprecated,
+  Optimization,
+  Security,
+  Performance,
+};
 
-/// Mark not yet implemented features - error level
-#define ZUNIMPLEMENTED(...)                                                    \
-  ::zutils::log::err("UNIMPLEMENTED: " __VA_ARGS__ " {}", ZLOC)
+enum class CriticalCode : uint8_t {
+  Unreachable,
+  Unimplemented,
+  FixMe,
+  Memory,
+  ThreadSafety,
+};
 
-/// Mark deprecated functionality - warning level
-#define ZDEPRECATED(...)                                                       \
-  ::zutils::log::warn("DEPRECATED: " __VA_ARGS__ " {}", ZLOC)
+static constexpr std::string_view CAUTION_TAGS[] = {
+  "[TODO]",
+  "[DEPR]",
+  "[OPTM]",
+  "[SCRT]",
+  "[PERF]",
+};
 
-/// Mark bugs that need fixing - error level
-#define ZFIXME(...) ::zutils::log::err("FIXME: " __VA_ARGS__ " {}", ZLOC)
+static constexpr std::string_view CRITICAL_TAGS[] = {
+  "[URCH]",
+  "[UIMP]",
+  "[FIXM]",
+  "[MEMR]",
+  "[THRD]",
+};
 
-/// Mark optimization opportunities - debug level
-#define ZOPTIMIZE(...)                                                         \
-  ::zutils::log::dbg("OPTIMIZE: " __VA_ARGS__ " {}", ZLOC)
+template <typename... Args>
+inline void caution(
+  CautionCode                 code,
+  SourceLoc                   loc,
+  std::format_string<Args...> f_str,
+  Args&&...                   args
+) noexcept {
+  log::_log(
+    LogLevel::Warn,
+    "{}{}{}{}{}",
+    ColorText{CAUTION_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
+    config::TAG_TAG,
+    loc,
+    config::TAG_TAG,
+    std::format(f_str, std::forward<Args>(args)...)
+  );
+}
 
-/// Mark security review needed - warning level
-#define ZSECURITY(...) ::zutils::log::warn("SECURITY: " __VA_ARGS__ " {}", ZLOC)
+// ==================== CRITICAL (Fatal) ====================
 
-/// Mark performance issues - warning level
-#define ZPERFORMANCE(...)                                                      \
-  ::zutils::log::warn("PERFORMANCE: " __VA_ARGS__ " {}", ZLOC)
+template <typename... Args>
+[[noreturn]] inline void critical(
+  CriticalCode                code,
+  SourceLoc                   loc,
+  std::format_string<Args...> f_str,
+  Args&&...                   args
+) noexcept {
+  log::_log(
+    LogLevel::Warn,
+    "{}{}{}{}{}",
+    ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
+    config::TAG_TAG,
+    loc,
+    config::TAG_TAG,
+    std::format(f_str, std::forward<Args>(args)...)
+  );
 
-/// Mark memory issues - error level
-#define ZMEMORY(...) ::zutils::log::err("MEMORY: " __VA_ARGS__ " {}", ZLOC)
+  config::killProcess();
+  std::terminate();
+}
 
-/// Mark thread safety issues - error level
-#define ZTHREAD_SAFETY(...)                                                    \
-  ::zutils::log::err("THREAD_SAFETY: " __VA_ARGS__ " {}", ZLOC)
+} // namespace zutils::tools
 
-#define ZON_DEBUG \
-  if constexpr (::zutils::config::IS_MODE_DEBUG)
+/// MACROS:
 
-#define ZON_RELEASE \
-  if constexpr (!::zutils::config::IS_MODE_DEBUG)
+#define   ZON_DEBUG  if constexpr ( ::zutils::config::IS_MODE_DEBUG)
+#define ZON_RELEASE  if constexpr (!::zutils::config::IS_MODE_DEBUG)
+
+#define  ZCAUTION(code, ...)  ::zutils::tools::caution (code, ZLOC, __VA_ARGS__)
+#define ZCRITICAL(code, ...)  ::zutils::tools::critical(code, ZLOC, __VA_ARGS__)
+
+#define        ZTODO(...)  ZCAUTION(::zutils::tools::CautionCode::Todo        , __VA_ARGS__)
+#define  ZDEPRECATED(...)  ZCAUTION(::zutils::tools::CautionCode::Deprecated  , __VA_ARGS__)
+#define    ZOPTIMIZE(...)  ZCAUTION(::zutils::tools::CautionCode::Optimization, __VA_ARGS__)
+#define    ZSECURITY(...)  ZCAUTION(::zutils::tools::CautionCode::Security    , __VA_ARGS__)
+#define ZPERFORMANCE(...)  ZCAUTION(::zutils::tools::CautionCode::Performance , __VA_ARGS__)
+
+#define   ZUNREACHABLE(...)  ZCRITICAL(::zutils::tools::CriticalCode::Unreachable  , __VA_ARGS__)
+#define ZUNIMPLEMENTED(...)  ZCRITICAL(::zutils::tools::CriticalCode::Unimplemented, __VA_ARGS__)
+#define         ZFIXME(...)  ZCRITICAL(::zutils::tools::CriticalCode::FixMe        , __VA_ARGS__)
+#define        ZMEMORY(...)  ZCRITICAL(::zutils::tools::CriticalCode::Memory       , __VA_ARGS__)
+#define ZTHREAD_SAFETY(...)  ZCRITICAL(::zutils::tools::CriticalCode::ThreadSafety , __VA_ARGS__)

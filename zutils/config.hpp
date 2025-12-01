@@ -145,8 +145,8 @@ struct SourceLoc {
 
   SourceLoc() : TEXT {}, EMPTY {true} {}
 
-  SourceLoc(std::string_view file, std::string_view fn, int line)
-    : TEXT  {std::format("[{}]{}{}(){}{}", file, config::TAG_TAG, fn, config::TAG_TAG, line)}
+  SourceLoc(std::string_view file, int line)
+    : TEXT  {std::format("[{}:{}]", file, line)}
     , EMPTY {false}
   {}
 
@@ -182,4 +182,4 @@ struct std::formatter<zutils::SourceLoc> {
 
 /// MACROS:
 
-#define ZLOC  ::zutils::SourceLoc {__FILE__, __FUNCTION__, __LINE__}
+#define ZLOC  ::zutils::SourceLoc {__FILE__, __LINE__}
