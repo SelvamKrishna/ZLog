@@ -39,5 +39,5 @@ struct ScopeTracer {
   ::zutils::trace::ScopeTracer ZTRACE_tracer_##__COUNTER__
 
 #define ZTRC         ZTRC_ANON {std::format("{}()", __FUNCTION__)}
-#define ZTRC_C(CLS)  ZTRC_ANON {std::format("{}::{}", #CLS, __FUNCTION__)}
+#define ZTRC_C(CLS)  ZTRC_ANON {std::format("{}::{}()", #CLS, __FUNCTION__)}
 #define ZTRC_S(DSC)  ZTRC_ANON {DSC}

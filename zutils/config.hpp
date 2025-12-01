@@ -121,8 +121,12 @@ static constexpr bool IS_WINDOWS = true;
 static constexpr bool IS_WINDOWS = false;
 #endif
 
+#ifdef ZUTILS_T
+inline void killProcess() noexcept {}
+#else
 [[noreturn]]
 inline void killProcess() noexcept { std::abort(); }
+#endif
 
 [[nodiscard]]
 constexpr inline const ColorText& getLogLevel(LogLevel lvl) noexcept

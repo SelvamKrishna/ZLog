@@ -4,9 +4,14 @@ CXXFLAGS := -std=c++23 -I.
 TEST_SRC := .\test\main.cpp
 TEST_BIN := .\test\test
 
-.PHONY: all run
+TEST_FLAG := ZUTILS_T
+
+.PHONY: all final run
 
 all:
+	$(CC) $(CXXFLAGS) -o $(TEST_BIN) $(TEST_SRC) -D$(TEST_FLAG)
+
+final:
 	$(CC) $(CXXFLAGS) -o $(TEST_BIN) $(TEST_SRC)
 
 run: all

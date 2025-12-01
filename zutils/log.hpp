@@ -80,12 +80,23 @@ inline constexpr void _log(LogLevel lvl, std::format_string<Args...> f_str, Args
     << msg << "\n";
 }
 
+inline void _log(LogLevel lvl, std::string_view msg) {
+  if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
+  ColorText   time = {internal::getTimestamp(), ANSI::EX_Black};
+
+  internal::logStream(lvl).os
+    << config::COLOR_RESET
+    << time << config::TAG_TAG
+    << config::getLogLevel(lvl) << config::TAG_TAG
+    << msg << "\n";
+}
+
 #define LOGGING_FN(FN_NAME, LOG_LVL) \
   template <typename... Args> \
   inline constexpr void FN_NAME(std::format_string<Args...> f_str, Args&&... args) \
-  { \
-    _log(LOG_LVL, f_str, std::forward<Args>(args)...); \
-  }
+  { _log(LOG_LVL, f_str, std::forward<Args>(args)...); } \
+  inline void FN_NAME(std::string_view message) \
+  { _log(LOG_LVL, message); } \
 
 LOGGING_FN(dbg  , LogLevel::Debug)
 LOGGING_FN(info , LogLevel::Info)

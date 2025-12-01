@@ -10,18 +10,50 @@ namespace zutils::test {
 #define  _TAG(TAG)   (TAG) << config::TAG_TAG
 #define _EXPR(EXPR)  ColorText{(EXPR), ANSI::Magenta}
 
-#define _SIMPLE_MSG(TAG)      \
-  "{}{}{}{}{}",               \
-  (TAG), config::TAG_TAG,     \
-  loc, config::TAG_TAG,       \
-  ColorText{desc, ANSI::Bold} \
+namespace internal {
 
-#define _COMPLX_MSG(TAG)                           \
-  "{}{}{}{}{}{}",                                  \
-  (TAG), config::TAG_TAG,                          \
-  loc, config::TAG_TAG,                            \
-  ColorText{expr, ANSI::Magenta}, config::TAG_TAG, \
-  ColorText{desc, ANSI::Bold}                      \
+[[nodiscard]]
+inline std::string _fmtSimpleStr(
+  const ColorText& tag,
+  std::string_view desc,
+  const SourceLoc& loc
+) noexcept {
+  // Pre-allocate to avoid reallocations
+  if (desc.empty())
+    return std::format("{}{}{}", tag, config::TAG_TAG, loc);
+  else {
+    return std::format(
+      "{}{}{}{}{}",
+      tag, config::TAG_TAG,
+      loc, config::TAG_TAG,
+      ColorText{desc, ANSI::Bold}
+    );
+  }
+}
+
+[[nodiscard]]
+inline std::string _fmtComplexStr(
+  const ColorText& tag,
+  std::string_view expr,
+  std::string_view desc,
+  const SourceLoc& loc
+) noexcept {
+  if (desc.empty()) {
+    return std::format("{}{}{}{}{}",
+      tag, config::TAG_TAG, loc, config::TAG_TAG,
+      ColorText{expr, ANSI::Magenta});
+  } else {
+    return std::format(
+      "{}{}{}{}{}{}{}",
+      tag, config::TAG_TAG,
+      loc, config::TAG_TAG,
+      ColorText{expr, ANSI::Magenta}, config::TAG_TAG,
+      ColorText{desc, ANSI::Bold}
+    );
+  }
+}
+
+} // namespace internal
 
 /// Unit test assertion (always runs in tests)
 
@@ -30,7 +62,7 @@ inline void test(bool condition, std::string_view desc) noexcept
   ZOUT
     << _TAG(config::TEST_TAG)
     << _TAG(condition ? config::PASS_TAG : config::FAIL_TAG)
-    << _TAG(_EXPR(desc));
+    << _EXPR(desc);
 }
 
 inline void test(bool condition, std::string_view expr, std::string_view desc) noexcept
@@ -39,7 +71,7 @@ inline void test(bool condition, std::string_view expr, std::string_view desc) n
     << _TAG(config::TEST_TAG)
     << _TAG(condition ? config::PASS_TAG : config::FAIL_TAG)
     << _TAG(_EXPR(expr))
-    << _TAG(desc);
+    << desc;
 }
 
 #undef _TAG
@@ -50,13 +82,13 @@ inline void test(bool condition, std::string_view expr, std::string_view desc) n
 inline void expect(bool condition, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-  ZWARN(_SIMPLE_MSG(config::EXPECT_TAG));
+  ZWARN(internal::_fmtSimpleStr(config::EXPECT_TAG, desc, loc));
 }
 
 inline void expect(bool condition, std::string_view expr, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-  ZWARN(_COMPLX_MSG(config::EXPECT_TAG));
+  ZWARN(internal::_fmtComplexStr(config::EXPECT_TAG, expr, desc, loc));
 }
 
 /// Debug assertion (only in debug builds)
@@ -65,7 +97,7 @@ inline void assert(bool condition, std::string_view desc, SourceLoc loc = {}) no
 {
   if constexpr (!config::IS_MODE_DEBUG) return;
   if (condition) return;
-  ZERR(_SIMPLE_MSG(config::ASSERT_TAG));
+  ZERR(internal::_fmtSimpleStr(config::ASSERT_TAG, desc, loc));
   config::killProcess();
 }
 
@@ -73,7 +105,7 @@ inline void assert(bool condition, std::string_view expr, std::string_view desc,
 {
   if constexpr (!config::IS_MODE_DEBUG) return;
   if (condition) return;
-  ZERR(_COMPLX_MSG(config::ASSERT_TAG));
+  ZERR(internal::_fmtComplexStr(config::ASSERT_TAG, expr, desc, loc));
   config::killProcess();
 }
 
@@ -82,14 +114,14 @@ inline void assert(bool condition, std::string_view expr, std::string_view desc,
 inline void require(bool condition, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-  ZERR(_SIMPLE_MSG(config::ASSERT_TAG));
+  ZERR(internal::_fmtSimpleStr(config::ASSERT_TAG, desc, loc));
   config::killProcess();
 }
 
 inline void require(bool condition, std::string_view expr, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-  ZERR(_COMPLX_MSG(config::ASSERT_TAG));
+  ZERR(internal::_fmtComplexStr(config::ASSERT_TAG, expr, desc, loc));
   config::killProcess();
 }
 
@@ -97,7 +129,7 @@ inline void require(bool condition, std::string_view expr, std::string_view desc
 [[noreturn]]
 inline void panic(std::string_view desc, SourceLoc loc = {}) noexcept
 {
-  ZFATAL(_SIMPLE_MSG(config::PANIC_TAG));
+  ZFATAL(internal::_fmtSimpleStr(config::PANIC_TAG, desc, loc));
   config::killProcess();
 }
 
