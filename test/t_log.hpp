@@ -8,20 +8,17 @@
 namespace test {
 
 inline void log_basic() {
-  std::cout << "=== Testing Basic Logging ===" << std::endl;
-
+  std::cout << ("=== Testing Basic Logging ===") << "\n";
   // Test all log levels
   ZDBG("This is a DEBUG message");
   ZINFO("This is an INFO message");
   ZWARN("This is a WARNING message");
   ZERR("This is an ERROR message");
   ZFATAL("This is a FATAL message");
-
-  std::cout << std::endl;
 }
 
 inline void log_args() {
-  std::cout << "=== Testing Logging with Arguments ===" << std::endl;
+  std::cout <<("=== Testing Logging with Arguments ===") << "\n";
 
   int number = 42;
   std::string text = "hello world";
@@ -30,13 +27,11 @@ inline void log_args() {
   ZDBG("Number: {}, Text: {}, Pi: {:.2f}", number, text, pi);
   ZINFO("The answer is {}", number);
   ZWARN("Value {} is suspicious", number * 2);
-  ZERR("Value {} is suspicious", zutils::ColorText {"SOMETHING", zutils::ANSI::BG_EX_Magenta});
-
-  std::cout << std::endl;
+  ZERR("Value {} is suspicious", zutils::ColorText {"SOMETHING", zutils::ANSI::EX_Magenta});
 }
 
 inline void log_cond() {
-  std::cout << "=== Testing Conditional Logging ===" << std::endl;
+  std::cout <<("=== Testing Conditional Logging ===") << "\n";
 
   bool condition_true = true;
   bool condition_false = false;
@@ -46,12 +41,10 @@ inline void log_cond() {
   ZDBG_IF(condition_false, "This should NOT appear - condition is false");
   ZINFO_IF(value > 10, "Value {} is greater than 10", value);
   ZWARN_IF(value < 5, "Value {} is less than 5", value); // Should not appear
-
-  std::cout << std::endl;
 }
 
 inline void log_vars() {
-  std::cout << "=== Testing Expression Debugging ===" << std::endl;
+  std::cout <<("=== Testing Expression Debugging ===") << "\n";
 
   int x = 10;
   int y = 20;
@@ -64,12 +57,10 @@ inline void log_vars() {
   ZVAR(name.length());
   ZVAR(x > y);
   ZVAR(name == "Alice");
-
-  std::cout << std::endl;
 }
 
 inline void log_vars_complex() {
-  std::cout << "=== Testing Complex Types ===" << std::endl;
+  std::cout <<("=== Testing Complex Types ===") << "\n";
 
   std::vector<int> numbers = {1, 2, 3, 4, 5};
   std::pair<std::string, int> person = {"John", 25};
@@ -80,8 +71,6 @@ inline void log_vars_complex() {
 
   // Test with different types
   ZDBG("Boolean: {}, Char: {}, Float: {}", true, 'A', 3.14f);
-
-  std::cout << std::endl;
 }
 
 class LogTestClass {
@@ -102,18 +91,16 @@ public:
 };
 
 inline void log_class() {
-  std::cout << "=== Testing Class Logging ===" << std::endl;
+  std::cout <<("=== Testing Class Logging ===") << "\n";
 
   LogTestClass obj(100);
   obj.display();
   obj.set_value(200);
   obj.display();
-
-  std::cout << std::endl;
 }
 
 inline void log_edge_case() {
-  std::cout << "=== Testing Edge Cases ===" << std::endl;
+  std::cout <<("=== Testing Edge Cases ===") << "\n";
 
   // Empty message
   ZDBG("");
@@ -127,11 +114,10 @@ inline void log_edge_case() {
   // Very long message
   ZDBG("This is a very long message that might wrap around in the terminal: {}",
        "additional information here");
-
-  std::cout << std::endl;
 }
 
 inline void log_all() {
+  std::cout <<("=== Testing all Logging features ===") << "\n";
   test::log_basic();
   test::log_args();
   test::log_cond();

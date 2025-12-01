@@ -96,8 +96,9 @@ static constexpr ColorText TEST_TAG        = {"[TEST]", ANSI::Blue };
 static constexpr ColorText PASS_TAG        = {"[PASS]", ANSI::Green};
 static constexpr ColorText FAIL_TAG        = {"[FAIL]", ANSI::Red  };
 
-static constexpr ColorText CHECK_TAG       = {"[CHCK]", ANSI::EX_Yellow};
-static constexpr ColorText ASSERT_TAG      = {"[ASRT]", ANSI::EX_Red   };
+static constexpr ColorText CHECK_TAG       = {"[CHCK]", ANSI::Yellow};
+static constexpr ColorText ASSERT_TAG      = {"[ASRT]", ANSI::Red   };
+static constexpr ColorText PANIC_TAG       = {"[PANC]", ANSI::BG_Red};
 
 static constexpr std::string_view TAB_TAG = "  ";
 static constexpr std::string_view TAG_TAG = " : ";
