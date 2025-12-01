@@ -4,116 +4,104 @@
 #include "./log.hpp"
 
 #include <string_view>
-#include <iostream>
 
 namespace zutils::test {
+
+#define  _TAG(TAG)   (TAG) << config::TAG_TAG
+#define _EXPR(EXPR)  ColorText{(EXPR), ANSI::Magenta}
+
+#define _SIMPLE_MSG(TAG)                        \
+  "{}{}{}{}{}",                                 \
+  (TAG), config::TAG_TAG,                       \
+  ColorText{desc, ANSI::Bold}, config::TAG_TAG, \
+  loc                                           \
+
+#define _COMPLX_MSG(TAG)                           \
+  "{}{}{}{}{}{}",                                  \
+  (TAG), config::TAG_TAG,                          \
+  ColorText{expr, ANSI::Magenta}, config::TAG_TAG, \
+  ColorText{desc, ANSI::Bold}, config::TAG_TAG,    \
+  loc                                              \
 
 /// Unit test assertion (always runs in tests)
 
 inline void test(bool condition, std::string_view desc) noexcept
 {
-  std::cout
-    << config::TEST_TAG << config::TAG_TAG
-    << (condition ? config::PASS_TAG : config::FAIL_TAG)
-    << config::TAG_TAG << ColorText{desc, ANSI::Magenta} << "\n";
+  ZOUT
+    << _TAG(config::TEST_TAG)
+    << _TAG(condition ? config::PASS_TAG : config::FAIL_TAG)
+    << _TAG(_EXPR(desc));
 }
 
 inline void test(bool condition, std::string_view expr, std::string_view desc) noexcept
 {
-  std::cout
-    << config::TEST_TAG << config::TAG_TAG
-    << (condition ? config::PASS_TAG : config::FAIL_TAG) << config::TAG_TAG
-    << ColorText{expr, ANSI::Magenta} << config::TAG_TAG
-    << ColorText{desc, ANSI::Italic} << "\n";
+  ZOUT
+    << _TAG(config::TEST_TAG)
+    << _TAG(condition ? config::PASS_TAG : config::FAIL_TAG)
+    << _TAG(_EXPR(expr))
+    << _TAG(desc);
 }
+
+#undef _TAG
+#undef _EXPR
 
 /// Expectation check (non-fatal, always runs)
 
-inline void expect(bool condition, std::string_view desc) noexcept
+inline void expect(bool condition, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-  ZWARN(
-    "{}{}{}",
-    config::EXPECT_TAG, config::TAG_TAG, ColorText{desc, ANSI::Bold}
-  );
+  ZWARN(_SIMPLE_MSG(config::EXPECT_TAG));
 }
 
-inline void expect(bool condition, std::string_view expr, std::string_view desc) noexcept
+inline void expect(bool condition, std::string_view expr, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-  ZWARN(
-    "{}{}{}{}{}",
-    config::EXPECT_TAG, config::TAG_TAG,
-    ColorText{expr, ANSI::Magenta}, config::TAG_TAG,
-    ColorText{desc, ANSI::Bold}
-  );
+  ZWARN(_COMPLX_MSG(config::EXPECT_TAG));
 }
 
 /// Debug assertion (only in debug builds)
 
-inline void assert(bool condition, std::string_view desc) noexcept
+inline void assert(bool condition, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if constexpr (!config::IS_MODE_DEBUG) return;
   if (condition) return;
-
-  ZERR(
-    "{}{}{}",
-    config::ASSERT_TAG, config::TAG_TAG, ColorText{desc, ANSI::Bold}
-  );
-
+  ZERR(_SIMPLE_MSG(config::ASSERT_TAG));
   config::killProcess();
 }
 
-inline void assert(bool condition, std::string_view expr, std::string_view desc) noexcept
+inline void assert(bool condition, std::string_view expr, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if constexpr (!config::IS_MODE_DEBUG) return;
   if (condition) return;
-
-  ZERR(
-    "{}{}{}{}{}",
-    config::ASSERT_TAG, config::TAG_TAG,
-    ColorText{expr, ANSI::Magenta}, config::TAG_TAG,
-    ColorText{desc, ANSI::Bold}
-  );
-
+  ZERR(_COMPLX_MSG(config::ASSERT_TAG));
   config::killProcess();
 }
 
 /// Runtime assertion (always fatal)
 
-inline void require(bool condition, std::string_view desc) noexcept
+inline void require(bool condition, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-
-  ZERR(
-    "{}{}{}",
-    config::ASSERT_TAG, config::TAG_TAG, ColorText{desc, ANSI::Bold}
-  );
+  ZERR(_SIMPLE_MSG(config::ASSERT_TAG));
   config::killProcess();
 }
 
-inline void require(bool condition, std::string_view expr, std::string_view desc) noexcept
+inline void require(bool condition, std::string_view expr, std::string_view desc, SourceLoc loc = {}) noexcept
 {
   if (condition) return;
-
-  ZERR(
-    "{}{}{}{}{}",
-    config::ASSERT_TAG, config::TAG_TAG,
-    ColorText{expr, ANSI::Magenta}, config::TAG_TAG,
-    ColorText{desc, ANSI::Bold}
-  );
+  ZERR(_COMPLX_MSG(config::ASSERT_TAG));
   config::killProcess();
 }
 
 /// Panic with message (always fatal)
-inline void panic(std::string_view desc) noexcept
+inline void panic(std::string_view desc, SourceLoc loc = {}) noexcept
 {
-  ZFATAL(
-    "{}{}{}",
-    config::PANIC_TAG, config::TAG_TAG, ColorText{desc, ANSI::Bold}
-  );
+  ZFATAL(_SIMPLE_MSG(config::PANIC_TAG));
   config::killProcess();
 }
+
+#undef _SIMPLE_MSG
+#undef _COMPLX_MSG
 
 } // namespace zutils::test
 
@@ -125,8 +113,8 @@ inline void panic(std::string_view desc) noexcept
 #define   ZTEST_EQ(ACT, EXP)     ZTEST(ACT == EXP)
 #define   ZTEST_NE(ACT, EXP)     ZTEST(ACT != EXP)
 // Non fatal checking
-#define    ZEXPECT(COND)         ::zutils::test::expect((COND), #COND)
-#define  ZEXPECT_S(COND, DESC)   ::zutils::test::expect((COND), #COND, DESC)
+#define    ZEXPECT(COND)         ::zutils::test::expect((COND), #COND, ZLOC)
+#define  ZEXPECT_S(COND, DESC)   ::zutils::test::expect((COND), #COND, DESC, ZLOC)
 #define ZEXPECT_EQ(ACT, EXP)     ZEXPECT(ACT == EXP)
 #define ZEXPECT_NE(ACT, EXP)     ZEXPECT(ACT != EXP)
 
@@ -139,17 +127,18 @@ inline void panic(std::string_view desc) noexcept
 
 #else
 
-#define    ZASSERT(COND)         ::zutils::test::assert((COND), #COND)
-#define  ZASSERT_S(COND, DESC)   ::zutils::test::assert((COND), #COND, DESC)
+// Fatal debug only checking
+#define    ZASSERT(COND)         ::zutils::test::assert((COND), #COND, ZLOC)
+#define  ZASSERT_S(COND, DESC)   ::zutils::test::assert((COND), #COND, DESC, ZLOC)
 #define ZASSERT_EQ(ACT, EXP)     ZASSERT(ACT == EXP)
 #define ZASSERT_NE(ACT, EXP)     ZASSERT(ACT != EXP)
 
 #endif
 
 // Fatal runtime checking
-#define    ZREQUIRE(COND)        ::zutils::test::require((COND), #COND)
-#define  ZREQUIRE_S(COND, DESC)  ::zutils::test::require((COND), #COND, DESC)
+#define    ZREQUIRE(COND)        ::zutils::test::require((COND), #COND, ZLOC)
+#define  ZREQUIRE_S(COND, DESC)  ::zutils::test::require((COND), #COND, DESC, ZLOC)
 #define ZREQUIRE_EQ(ACT, EXP)    ZREQUIRE(ACT == EXP)
 #define ZREQUIRE_NE(ACT, EXP)    ZREQUIRE(ACT != EXP)
 
-#define ZPANIC(DESC)  ::zutils::test::panic(DESC)
+#define ZPANIC(DESC)  ::zutils::test::panic(DESC, ZLOC)

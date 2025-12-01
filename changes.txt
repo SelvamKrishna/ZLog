@@ -1,0 +1,2 @@
+feat: code location logging
+- SourceLocation class to keep track of the calling location

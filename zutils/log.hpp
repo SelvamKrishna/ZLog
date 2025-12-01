@@ -98,4 +98,6 @@ LOGGING_FN(fatal, LogLevel::Fatal)
 #define   ZERR_IF(COND, ...)  do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
 #define ZFATAL_IF(COND, ...)  do { if (COND) ::zutils::log::fatal(__VA_ARGS__); } while (0)
 
-#define ZVAR(VAR)   ZDBG("({}) = {}", ::zutils::ColorText{#VAR, ::zutils::ANSI::Magenta}, (VAR))
+#define ZVAR(VAR)  ZDBG("({}) = {}", ::zutils::ColorText{#VAR, ::zutils::ANSI::Magenta}, (VAR))
+
+#define ZOUT  std::cout << "\n" << ::zutils::config::COLOR_RESET

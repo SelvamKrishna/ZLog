@@ -62,7 +62,6 @@ struct ColorText {
   const ANSI         COLOR;
 };
 
-
 namespace config {
 
 /// MODIFY: Change variables vvv
@@ -140,6 +139,23 @@ inline std::ostream& operator<<(std::ostream& os, const ColorText& ct)
   : os << ct.TEXT;
 }
 
+struct SourceLoc {
+  const bool EMPTY;
+  const std::string TEXT;
+
+  SourceLoc() : TEXT {}, EMPTY {true} {}
+
+  SourceLoc(std::string_view file, std::string_view fn, int line)
+    : TEXT  {std::format("[{}]{}{}(){}{}", file, config::TAG_TAG, fn, config::TAG_TAG, line)}
+    , EMPTY {false}
+  {}
+
+  friend std::ostream &operator<<(std::ostream &os, const SourceLoc &sl)
+  {
+    return (sl.EMPTY) ? os : os << ColorText {sl.TEXT, ANSI::EX_Black};
+  }
+};
+
 } // namespace zutils
 
 template<>
@@ -152,3 +168,18 @@ struct std::formatter<zutils::ColorText> {
     : std::format_to(ctx.out(), "{}", ct.TEXT);
   }
 };
+
+template<>
+struct std::formatter<zutils::SourceLoc> {
+  constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
+
+  auto format(const zutils::SourceLoc &sl, std::format_context &ctx) const {
+    return (sl.EMPTY)
+    ? std::format_to(ctx.out(), "")
+    : std::format_to(ctx.out(), "{}", zutils::ColorText {sl.TEXT, zutils::ANSI::EX_Black});
+  }
+};
+
+/// MACROS:
+
+#define ZLOC  ::zutils::SourceLoc {__FILE__, __FUNCTION__, __LINE__}
