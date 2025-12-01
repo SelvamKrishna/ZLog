@@ -16,17 +16,17 @@ struct ScopeTracer {
     : _STR_TEXT {std::move(text)}
     , TEXT      {_STR_TEXT ,(config::ENABLE_TRACE_DULL) ? ANSI::EX_Black : ANSI::Reset}
   {
-    log::_log(
+    log::internal::_log(
       LogLevel::Trace,
-      "{}{}{}", config::SCOPE_ENTER_TAG, config::TAG_TAG, TEXT
+      "{}{}{}", config::TRACE_IN_TAG, config::TAG_TAG, TEXT
     );
   }
 
   ~ScopeTracer()
   {
-    log::_log(
+    log::internal::_log(
       LogLevel::Trace,
-      "{}{}{}", config::SCOPE_LEAVE_TAG, config::TAG_TAG, TEXT
+      "{}{}{}", config::TRACE_OUT_TAG, config::TAG_TAG, TEXT
     );
   }
 };

@@ -3,7 +3,6 @@
 #include "zutils/trace.hpp"
 #include "zutils/tools.hpp"
 
-
 namespace demo_log {
 
 void run() {
@@ -154,6 +153,5 @@ int main() {
   demo_trace::run();
   demo_test ::run();
   demo_tools::run();
-
   return 0;
 }

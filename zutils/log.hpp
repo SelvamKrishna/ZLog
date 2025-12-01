@@ -14,36 +14,30 @@ namespace zutils::log {
 
 namespace internal {
 
-struct NullBuffer : std::streambuf {
-  int overflow(int c) override { return 0; }
-};
-
-static NullBuffer   s_null_buf    {};
-static std::ostream s_null_stream {&s_null_buf};
-
+// Thread-safe logging guard with mutex lock
 struct LogGuard {
-  std::scoped_lock<std::mutex> lock;
-  std::ostream&                os;
+  std::scoped_lock<std::mutex> lock;  //< RAII mutex lock
+  std::ostream&                os;    //< Reference to output stream
 
-  LogGuard(std::mutex& mutex, std::ostream& os)
-    : lock {mutex}
-    , os   {os}
-  {}
+  LogGuard(std::mutex& mutex, std::ostream& os) : lock{mutex}, os{os} {}
 };
 
+// Returns thread-safe `LogGuard` for logging
 [[nodiscard]]
 inline LogGuard logStream(LogLevel level) noexcept
 {
   static std::mutex s_log_mutex {};
 
+  // Use cout for Trace/Debug/Info, cerr for Warn/Error/Fatal
   return LogGuard {
     s_log_mutex,
-    (
-      static_cast<int>(level) < static_cast<int>(LogLevel::Warn)
-    ) ? std::cout : std::cerr
+    (static_cast<int>(level) < static_cast<int>(LogLevel::Warn))
+    ? std::cout
+    : std::cerr
   };
 }
 
+// Returns current timestamp as "[HH:MM:SS]" string
 [[nodiscard]]
 static inline std::string_view getTimestamp() noexcept
 {
@@ -62,66 +56,73 @@ static inline std::string_view getTimestamp() noexcept
 #endif
 
   std::strftime(buf, sizeof(buf), "[%H:%M:%S]", &tm_struct);
-  return std::string_view{buf, 10};
+  return std::string_view{buf, sizeof("[HH:MM:SS]")};
+}
+
+// Internal log function with plain string
+inline void _log(LogLevel lvl, std::string_view msg) noexcept
+{
+  if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
+  ColorText time = {internal::getTimestamp(), ANSI::EX_Black};
+
+  internal::logStream(lvl).os
+    << config::COLOR_RESET
+    << time << config::TAG_TAG
+    << config::TAG_CTX[static_cast<int>(lvl)]
+    << config::TAG_TAG << msg << "\n";
+}
+
+// Internal log function with format string
+template <typename... Args>
+inline void _log(
+  LogLevel lvl,
+  std::format_string<Args...> f_str,
+  Args&&... args
+) noexcept {
+  std::string msg  = std::format(f_str, std::forward<Args>(args)...);
+  _log(lvl, msg);
 }
 
 } // namespace internal
 
-template <typename... Args>
-inline constexpr void _log(LogLevel lvl, std::format_string<Args...> f_str, Args&&... args) {
-  if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
-  ColorText   time = {internal::getTimestamp(), ANSI::EX_Black};
-  std::string msg  = std::format(f_str, std::forward<Args>(args)...);
+// Macro to generate logging functions for each level
+#define _LOG_FN(FN_NAME, LOG_LVL)                                                  \
+  template <typename... Args>                                                      \
+  inline void FN_NAME(std::format_string<Args...> f_str, Args&&... args)           \
+  { ::zutils::log::internal::_log(LOG_LVL, f_str, std::forward<Args>(args)...); }  \
+  inline void FN_NAME(std::string_view message)                                    \
+  { ::zutils::log::internal::_log(LOG_LVL, message); }                             \
 
-  internal::logStream(lvl).os
-    << config::COLOR_RESET
-    << time << config::TAG_TAG
-    << config::getLogLevel(lvl) << config::TAG_TAG
-    << msg << "\n";
-}
+  // Generate logging functions for each level
+  _LOG_FN(trace, LogLevel::Trace)  //< Trace level logging
+  _LOG_FN(dbg  , LogLevel::Debug)  //< Debug level logging
+  _LOG_FN(info , LogLevel::Info)   //< Info level logging
+  _LOG_FN(warn , LogLevel::Warn)   //< Warning level logging
+  _LOG_FN(err  , LogLevel::Error)  //< Error level logging
+  _LOG_FN(fatal, LogLevel::Fatal)  //< Fatal level logging
 
-inline void _log(LogLevel lvl, std::string_view msg) {
-  if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
-  ColorText   time = {internal::getTimestamp(), ANSI::EX_Black};
+#undef _LOG_FN
 
-  internal::logStream(lvl).os
-    << config::COLOR_RESET
-    << time << config::TAG_TAG
-    << config::getLogLevel(lvl) << config::TAG_TAG
-    << msg << "\n";
-}
-
-#define LOGGING_FN(FN_NAME, LOG_LVL) \
-  template <typename... Args> \
-  inline constexpr void FN_NAME(std::format_string<Args...> f_str, Args&&... args) \
-  { _log(LOG_LVL, f_str, std::forward<Args>(args)...); } \
-  inline void FN_NAME(std::string_view message) \
-  { _log(LOG_LVL, message); } \
-
-LOGGING_FN(dbg  , LogLevel::Debug)
-LOGGING_FN(info , LogLevel::Info)
-LOGGING_FN(warn , LogLevel::Warn)
-LOGGING_FN(err  , LogLevel::Error)
-LOGGING_FN(fatal, LogLevel::Fatal)
-
-#undef LOGGING_FN
-
-} // namespace zutils
+} // namespace zutils::log
 
 /// MACROS:
 
+// Raw output with color reset
+#define ZOUT  std::cout << "\n" << ::zutils::config::COLOR_RESET
+
+// Standard logging
 #define   ZDBG(...)  ::zutils::log::dbg  (__VA_ARGS__)
 #define  ZINFO(...)  ::zutils::log::info (__VA_ARGS__)
 #define  ZWARN(...)  ::zutils::log::warn (__VA_ARGS__)
 #define   ZERR(...)  ::zutils::log::err  (__VA_ARGS__)
 #define ZFATAL(...)  ::zutils::log::fatal(__VA_ARGS__)
 
+// Conditional logging
 #define   ZDBG_IF(COND, ...)  do { if (COND) ::zutils::log::dbg  (__VA_ARGS__); } while (0)
 #define  ZINFO_IF(COND, ...)  do { if (COND) ::zutils::log::info (__VA_ARGS__); } while (0)
 #define  ZWARN_IF(COND, ...)  do { if (COND) ::zutils::log::warn (__VA_ARGS__); } while (0)
 #define   ZERR_IF(COND, ...)  do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
 #define ZFATAL_IF(COND, ...)  do { if (COND) ::zutils::log::fatal(__VA_ARGS__); } while (0)
 
-#define ZVAR(VAR)  ZDBG("({}) = {}", ::zutils::ColorText{#VAR, ::zutils::ANSI::Magenta}, (VAR))
-
-#define ZOUT  std::cout << "\n" << ::zutils::config::COLOR_RESET
+// Debug variable with name and value
+#define ZVAR(VAR)  ZDBG("({}) = {}", ZCOL(#VAR, Magenta), (VAR))

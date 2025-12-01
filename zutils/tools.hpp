@@ -44,7 +44,7 @@ inline void caution(
   std::format_string<Args...> f_str,
   Args&&...                   args
 ) noexcept {
-  log::_log(
+  log::internal::_log(
     LogLevel::Warn,
     "{}{}{}{}{}",
     ColorText{CAUTION_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
@@ -65,7 +65,7 @@ inline void critical(
   std::format_string<Args...> f_str,
   Args&&...                   args
 ) noexcept {
-  log::_log(
+  log::internal::_log(
     LogLevel::Fatal,
     "{}{}{}{}{}",
     ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::BG_Red},
