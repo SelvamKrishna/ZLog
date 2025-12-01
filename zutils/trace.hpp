@@ -6,7 +6,7 @@
 #include <format>
 #include <string>
 
-namespace zutils::trace::internal {
+namespace zutils::trace {
 
 struct ScopeTracer {
   const std::string _STR_TEXT;
@@ -31,12 +31,12 @@ struct ScopeTracer {
   }
 };
 
-} // namespace zutils::trace::internal
+} // namespace zutils::trace
 
 /// MACROS:
 
 #define ZTRC_ANON \
-  ::zutils::trace::internal::ScopeTracer ZTRACE_tracer_##__COUNTER__
+  ::zutils::trace::ScopeTracer ZTRACE_tracer_##__COUNTER__
 
 #define ZTRC         ZTRC_ANON {std::format("{}()", __FUNCTION__)}
 #define ZTRC_C(CLS)  ZTRC_ANON {std::format("{}::{}", #CLS, __FUNCTION__)}

@@ -1,14 +1,29 @@
-// #include "test/t_log.hpp"   // IWYU pragma: keep
-// #include "test/t_trace.hpp" // IWYU pragma: keep
-// #include "test/t_test.hpp" // IWYU pragma: keep
+#include "zutils/log.hpp"
 
-#include "zutils/tools.hpp"
+namespace test {
 
-int main() {
-  /// test::test_all();
-  ZTODO("Example {}", "Error (404)");
-  ZDEPRECATED("Example {}", "Error (404)");
-  ZOPTIMIZE("Example {}", "Error (404)");
-  ZSECURITY("Example {}", "Error (404)");
-  ZPERFORMANCE("Example {}", "Error (404)");
+void log()
+{
+  // Basic usage examples
+  ZDBG("Debug message: x = {}", 42);
+  ZINFO("Info message about {}", "initialization");
+  ZWARN("Warning: value {} is nearing limit", 99);
+  ZERR("Error: could not open file '{}'", "config.txt");
+  ZFATAL("Fatal error: {} failed unexpectedly", "system call");
+
+  // Conditional logging
+  bool condition = true;
+  ZINFO_IF(condition, "Conditional log triggered: {}", condition);
+  ZWARN_IF(!condition, "This will not be shown");
+
+  // Variable dump helper
+  int value = 123;
+  ZVAR(value);
+}
+
+} // namespace test
+
+int main()
+{
+  return 0;
 }

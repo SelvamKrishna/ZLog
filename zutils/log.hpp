@@ -14,11 +14,21 @@ namespace zutils::log {
 
 namespace internal {
 
-static std::ostream s_null_stream {nullptr};
+struct NullBuffer : std::streambuf {
+  int overflow(int c) override { return 0; }
+};
+
+static NullBuffer   s_null_buf    {};
+static std::ostream s_null_stream {&s_null_buf};
 
 struct LogGuard {
   std::scoped_lock<std::mutex> lock;
   std::ostream&                os;
+
+  LogGuard(std::mutex& mutex, std::ostream& os)
+    : lock {mutex}
+    , os   {os}
+  {}
 };
 
 [[nodiscard]]
@@ -27,10 +37,10 @@ inline LogGuard logStream(LogLevel level) noexcept
   static std::mutex s_log_mutex {};
 
   return LogGuard {
-    .lock = std::scoped_lock {s_log_mutex},
-    .os   = (
+    s_log_mutex,
+    (
       static_cast<int>(level) < static_cast<int>(LogLevel::Warn)
-    ) ? std::cout : std::cerr,
+    ) ? std::cout : std::cerr
   };
 }
 
@@ -52,7 +62,7 @@ static inline std::string_view getTimestamp() noexcept
 #endif
 
   std::strftime(buf, sizeof(buf), "[%H:%M:%S]", &tm_struct);
-  return buf;
+  return std::string_view{buf, 10};
 }
 
 } // namespace internal
@@ -60,11 +70,14 @@ static inline std::string_view getTimestamp() noexcept
 template <typename... Args>
 inline constexpr void _log(LogLevel lvl, std::format_string<Args...> f_str, Args&&... args) {
   if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
+  ColorText   time = {internal::getTimestamp(), ANSI::EX_Black};
+  std::string msg  = std::format(f_str, std::forward<Args>(args)...);
+
   internal::logStream(lvl).os
     << config::COLOR_RESET
-    << ColorText{internal::getTimestamp(), ANSI::EX_Black} << config::TAG_TAG
+    << time << config::TAG_TAG
     << config::getLogLevel(lvl) << config::TAG_TAG
-    << std::format(f_str, std::forward<Args>(args)...) << "\n";
+    << msg << "\n";
 }
 
 #define LOGGING_FN(FN_NAME, LOG_LVL) \

@@ -59,7 +59,7 @@ enum class ANSI : uint8_t {
 
 struct ColorText {
   const std::string_view TEXT;
-  const ANSI         COLOR;
+  const ANSI             COLOR;
 };
 
 namespace config {
@@ -159,7 +159,8 @@ struct SourceLoc {
 } // namespace zutils
 
 template<>
-struct std::formatter<zutils::ColorText> {
+struct std::formatter<zutils::ColorText>
+{
   constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
 
   auto format(const zutils::ColorText &ct, std::format_context &ctx) const {
@@ -170,7 +171,8 @@ struct std::formatter<zutils::ColorText> {
 };
 
 template<>
-struct std::formatter<zutils::SourceLoc> {
+struct std::formatter<zutils::SourceLoc>
+{
   constexpr auto parse(std::format_parse_context& ctx) { return ctx.begin(); }
 
   auto format(const zutils::SourceLoc &sl, std::format_context &ctx) const {

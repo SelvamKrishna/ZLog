@@ -58,16 +58,17 @@ inline void caution(
 // ==================== CRITICAL (Fatal) ====================
 
 template <typename... Args>
-[[noreturn]] inline void critical(
+[[noreturn]]
+inline void critical(
   CriticalCode                code,
   SourceLoc                   loc,
   std::format_string<Args...> f_str,
   Args&&...                   args
 ) noexcept {
   log::_log(
-    LogLevel::Warn,
+    LogLevel::Fatal,
     "{}{}{}{}{}",
-    ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
+    ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::BG_Red},
     config::TAG_TAG,
     loc,
     config::TAG_TAG,
@@ -75,7 +76,6 @@ template <typename... Args>
   );
 
   config::killProcess();
-  std::terminate();
 }
 
 } // namespace zutils::tools
