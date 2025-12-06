@@ -6,53 +6,53 @@
 namespace zutils::tools {
 
 enum class CautionCode : uint8_t {
-  Todo,
-  Deprecated,
-  Optimization,
-  Security,
-  Performance,
+    Todo,
+    Deprecated,
+    Optimization,
+    Security,
+    Performance,
 };
 
 enum class CriticalCode : uint8_t {
-  Unreachable,
-  Unimplemented,
-  FixMe,
-  Memory,
-  ThreadSafety,
+    Unreachable,
+    Unimplemented,
+    FixMe,
+    Memory,
+    ThreadSafety,
 };
 
 static constexpr std::string_view CAUTION_TAGS[] = {
-  "[TODO]",
-  "[DEPR]",
-  "[OPTM]",
-  "[SCRT]",
-  "[PERF]",
+    "[TODO]",
+    "[DEPR]",
+    "[OPTM]",
+    "[SCRT]",
+    "[PERF]",
 };
 
 static constexpr std::string_view CRITICAL_TAGS[] = {
-  "[URCH]",
-  "[UIMP]",
-  "[FIXM]",
-  "[MEMR]",
-  "[THRD]",
+    "[URCH]",
+    "[UIMP]",
+    "[FIXM]",
+    "[MEMR]",
+    "[THRD]",
 };
 
 template <typename... Args>
 inline void caution(
-  CautionCode                 code,
-  SourceLoc                   loc,
-  std::format_string<Args...> f_str,
-  Args&&...                   args
+    CautionCode                 code,
+    SourceLoc                   loc,
+    std::format_string<Args...> f_str,
+    Args&&...                   args
 ) noexcept {
-  log::internal::_log(
-    LogLevel::Warn,
-    "{}{}{}{}{}",
-    ColorText{CAUTION_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
-    config::TAG_TAG,
-    loc,
-    config::TAG_TAG,
-    std::format(f_str, std::forward<Args>(args)...)
-  );
+    log::internal::_log(
+        LogLevel::Warn,
+        "{}{}{}{}{}",
+        ColorText{CAUTION_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
+        config::TAG_TAG,
+        loc,
+        config::TAG_TAG,
+        std::format(f_str, std::forward<Args>(args)...)
+    );
 }
 
 template <typename... Args>
@@ -60,22 +60,22 @@ template <typename... Args>
 [[noreturn]]
 #endif
 inline void critical(
-  CriticalCode                code,
-  SourceLoc                   loc,
-  std::format_string<Args...> f_str,
-  Args&&...                   args
+    CriticalCode                code,
+    SourceLoc                   loc,
+    std::format_string<Args...> f_str,
+    Args&&...                   args
 ) noexcept {
-  log::internal::_log(
-    LogLevel::Fatal,
-    "{}{}{}{}{}",
-    ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::BG_Red},
-    config::TAG_TAG,
-    loc,
-    config::TAG_TAG,
-    std::format(f_str, std::forward<Args>(args)...)
-  );
+    log::internal::_log(
+        LogLevel::Fatal,
+        "{}{}{}{}{}",
+        ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::BG_Red},
+        config::TAG_TAG,
+        loc,
+        config::TAG_TAG,
+        std::format(f_str, std::forward<Args>(args)...)
+    );
 #ifndef ZUTILS_T
-  config::killProcess();
+    config::killProcess();
 #endif
 }
 
