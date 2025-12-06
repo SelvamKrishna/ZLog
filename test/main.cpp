@@ -1,161 +1,163 @@
-#include "zutils/zutils.hpp"
+#include "zutils/log.hpp"   // IWYU pragma: keep
+#include "zutils/test.hpp"  // IWYU pragma: keep
+#include "zutils/tools.hpp" // IWYU pragma: keep
+#include "zutils/trace.hpp" // IWYU pragma: keep
 
-using namespace zutils;
+#if 1
 
-//-----------------------------------------------------
-// Log level tests
-//-----------------------------------------------------
-void test_log_levels() {
-  ZTRACE;
+namespace demo_log {
 
-  ZLOGT << "Trace message";
-  ZLOGD << "Debug message";
-  ZLOGI << "Info message";
-  ZLOGW << "Warning message";
-  ZLOGE << "Error message";
-  ZLOGF << "Fatal message";
+void run() {
+    ZOUT << "=== LOGGING SHOWCASE ===\n\n";
+
+    ZDBG("Debug message: x = {}", 42);
+    ZINFO("Info: startup phase {}", "initializing");
+    ZWARN("Warning: value {} near limit", 95);
+    ZERR("Error: missing file '{}'", "config.ini");
+    ZFATAL("Fatal: component {} failed", "Renderer");
+
+    bool ok = true;
+    ZINFO_IF(ok, "Conditional log when ok = {}", ok);
+    ZWARN_IF(!ok, "This warning will not appear");
+
+    int counter = 123;
+    ZVAR(counter);
+    ZOUT << "=== LOGGING COMPLETE ===\n";
 }
 
-//-----------------------------------------------------
-// Conditional logging
-//-----------------------------------------------------
-void test_conditional_logging() {
-  ZTRACE;
+} // namespace demo_log
 
-  bool debug_enabled = true;
-  bool error_condition = false;
+namespace demo_trace {
 
-  ZLOGD_IF(debug_enabled) << "This debug log should appear";
-  ZLOGE_IF(error_condition) << "This error log should NOT appear";
-  ZLOGW_IF(!error_condition) << "Warning printed because !error_condition == true";
+void simple() {
+    ZTRC;
+    ZINFO("Inside simple() function");
 }
 
-//-----------------------------------------------------
-// Variable logging
-//-----------------------------------------------------
-void test_var_logging() {
-  ZTRACE;
-
-  struct P { float x, y; };
-  P player_pos {.x = 100.2F, .y = 200.4F};
-
-  float velocity = 123.2;
-
-  void* some_ptr = &player_pos;
-
-  ZLOG_V(player_pos.x);
-  ZLOG_V(velocity);
-  ZLOG_V(some_ptr);
+void custom() {
+    ZTRC_S("Loading Resources");
+    ZDBG("Pretend resource loading here...");
 }
 
-//-----------------------------------------------------
-// Scope tracing (automatic entry/exit logs)
-//-----------------------------------------------------
-void inner_function() {
-  ZTRACE;
-  ZLOGI << "Doing some work inside inner_function()";
+struct DemoClass {
+    void method() {
+        ZTRC_C(DemoClass);
+        ZINFO("Inside DemoClass::method()");
+    }
+};
+
+void nested() {
+    ZTRC_S("Outer Scope");
+
+    {
+        ZTRC_S("Inner A");
+        ZDBG("Working inside A");
+    }
+    {
+        ZTRC_S("Inner B");
+        ZDBG("Working inside B");
+    }
 }
 
-void test_scope_tracing() {
-  ZTRACE_C(TestScope);
-  inner_function();
+void lambdaTest() {
+    auto fn = []() {
+        ZTRC_S("Lambda Execution");
+        ZINFO("Inside lambda");
+    };
+    fn();
 }
 
-//-----------------------------------------------------
-// Basic tests (PASS/FAIL style output)
-//-----------------------------------------------------
-void test_wtest_macros() {
-  ZTRACE;
+void run() {
+    ZOUT << "=== TRACE SHOWCASE ===\n\n";
 
-  int a = 5, b = 5, c = 10;
+    simple();
+    custom();
 
-  ZTEST(a == b);
-  ZTEST_EQ(a, b);
-  ZTEST_EQ(a, c);
-  ZTEST_NE(a, c);
+    DemoClass d;
+    d.method();
 
-  ZTEST_EQ(a + c, 15);
-  ZTEST_EQ(a + b, 12);
-  ZTEST_NE(a + b, 12);
+    nested();
+    lambdaTest();
+
+    ZOUT << "=== TRACE COMPLETE ===\n";
 }
 
-//-----------------------------------------------------
-// Assertions (will abort on failure!)
-//-----------------------------------------------------
-void test_assertions() {
-  ZTRACE;
-  int x = 42;
+} // namespace demo_trace
 
-  ZASSERT(x == 42);     // should pass
-  ZASSERT_EQ(x, 42);    // should pass
+namespace demo_test {
 
-  // Uncomment to test failure:
-  // ZASSERT_NE(x, 42);  // will abort program
+void run() {
+    ZOUT << "=== TESTING SHOWCASE ===\n\n";
+
+    // Unit Tests
+    ZOUT << "\n-- UNIT TESTS --\n";
+    ZTEST(1 + 1 == 2);
+    ZTEST_S(2 * 3 == 6, "multiplication");
+    ZTEST_EQ(5, 5);
+    ZTEST_NE(5, 7);
+
+    // Example intentional fail
+    ZTEST_S(2 + 2 == 5, "intentional fail example");
+
+    // Expectations
+    ZOUT << "\n-- EXPECTATIONS --\n";
+    ZEXPECT(10 > 1);
+    ZEXPECT_S(4 > 9, "intentional expect warn");
+
+    // Asserts
+    ZOUT << "\n-- ASSERTS --\n";
+    ZASSERT(3 * 3 == 9);
+    ZASSERT_S(3 * 3 == 8, "intentional debug assert fail");
+
+    // Verifies
+    ZOUT << "\n-- VERIFIES --\n";
+    ZVERIFY(3 * 3 == 9);
+    ZVERIFY_S(3 * 3 == 8, "intentional verify fail");
+
+    // Panic
+    ZOUT << "\n-- PANIC --\n";
+    ZPANIC("demonstration panic");
+    ZPANIC_IF(false, "Shouldn't show");
+    ZPANIC_IF(true, "Should show");
+
+    ZOUT << "=== TESTING COMPLETE ===\n";
 }
 
-//-----------------------------------------------------
-// Stress test: multiple log calls
-//-----------------------------------------------------
-void test_massive_logging() {
-  ZTRACE;
-  for (int i = 0; i < 5; ++i) {
-    ZLOGI << "Iteration " << i;
-  }
+} // namespace demo_test
+
+namespace demo_tools {
+
+void run()
+{
+    ZOUT << "\n--- CAUTION EXAMPLES ---\n";
+
+    ZTODO("Implement proper input validation");
+    ZDEPRECATED("This function will be removed in the next release");
+    ZOPTIMIZE("Loop can be vectorized for better performance");
+    ZSECURITY("Check user authentication before proceeding");
+    ZPERFORMANCE("Consider caching results to reduce computation");
+
+    ZOUT << "\n--- CRITICAL EXAMPLES ---\n";
+
+    // The following normally abort, but in demo/testing builds
+    // killProcess() can be no-op for showcase purposes.
+    ZUNREACHABLE("Reached supposedly unreachable code block");
+    ZUNIMPLEMENTED("This feature is not implemented yet");
+    ZFIXME("Fix edge case when input is negative");
+    ZMEMORY("Detected potential memory leak in buffer allocation");
+    ZTHREAD_SAFETY("Potential data race detected on shared resource");
+
+    ZOUT << "\n--- SHOWCASE COMPLETE ---\n";
 }
 
-//-----------------------------------------------------
-// Expection (will log error on fail!)
-//-----------------------------------------------------
-void test_expections() {
-  ZTRACE;
-  int x = 42;
+} // namespace demo_tools
 
-  ZEXPECT(x == 42);     // should pass
-  ZEXPECT_EQ(x, 42);    // should pass
+#endif
 
-  // Uncomment to test failure:
-  ZEXPECT_NE(x, 42);
-}
-
-//-----------------------------------------------------
-// Todo Test (will warn and exit on call)
-//-----------------------------------------------------
-void test_todo() {
-  ZTRACE;
-  ZTODO("This function needs to be implemented (TODO) example");
-}
-
-//-----------------------------------------------------
-// Unreachable Test (will log fatal and exit on call)
-//-----------------------------------------------------
-void test_unreachable() {
-  ZTRACE;
-  ZUNREACHABLE;
-}
-
-//-----------------------------------------------------
-// Run all tests
-//-----------------------------------------------------
-void run_all_tests() {
-  ZTRACE;
-  test_log_levels();
-  test_conditional_logging();
-  test_var_logging();
-  test_scope_tracing();
-  test_wtest_macros();
-  test_assertions();
-  test_massive_logging();
-  test_expections();
-}
-
-//-----------------------------------------------------
-// Entry point
-//-----------------------------------------------------
 int main() {
-  ZLOGI << "=== Warp Mini Logger Tests ===";
-
-  run_all_tests();
-
-  ZLOGI << "=== All tests completed ===";
-  return 0;
+    demo_log  ::run();
+    demo_trace::run();
+    demo_test ::run();
+    demo_tools::run();
+    return 0;
 }
