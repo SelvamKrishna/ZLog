@@ -36,7 +36,6 @@ Customizable via `zutils/config.hpp` for flexible integration into various proje
   - `ZVERIFY`: For verifications (always active, fatal errors)
 
 - **Automatic expression stringification**
-- **Comparison macros** with *prefix* `_EQ` (*equal*), `_NE` (*not equal*)
 - **Custom description** with *prefix* `_S`
 - **Panic handling** with `ZPANIC` macro and `ZPANIC_IF` for conditional panics
 
