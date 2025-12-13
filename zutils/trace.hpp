@@ -23,7 +23,7 @@ public:
     {
         log::internal::_log(
             LogLevel::Trace,
-            "{}{}{}", config::TRACE_IN_TAG, config::TAG_TAG, TEXT
+            {"{}{}{}", config::TRACE_IN_TAG, config::TAG_TAG, TEXT}
         );
     }
 
@@ -32,7 +32,7 @@ public:
     {
         log::internal::_log(
             LogLevel::Trace,
-            "{}{}{}", config::TRACE_OUT_TAG, config::TAG_TAG, TEXT
+            {"{}{}{}", config::TRACE_OUT_TAG, config::TAG_TAG, TEXT}
         );
     }
 };

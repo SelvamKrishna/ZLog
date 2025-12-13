@@ -78,7 +78,7 @@ namespace config {
 
 // General flags
 static constexpr bool DISABLE_LOGGING   = false;  // Completely disable logging
-static constexpr bool ENABLE_TIMESTAMP  = true;   // Add [HH:MM:SS] to logs
+static constexpr bool ENABLE_TIMESTAMP  = false;  // Add [HH:MM:SS] to logs
 static constexpr bool ENABLE_COLOR      = true;   // Enable ANSI colors
 static constexpr bool ENABLE_TRACE_DULL = true;   // Make trace messages gray
 
@@ -212,4 +212,4 @@ struct std::formatter<zutils::SourceLoc> {
 
 // Create `SourceLoc` for current location
 #define ZLOC \
-    ::zutils::SourceLoc {__FILE__, __LINE__}
+    { ::zutils::SourceLoc {__FILE__, __LINE__} }
