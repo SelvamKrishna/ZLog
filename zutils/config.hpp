@@ -159,12 +159,12 @@ struct SourceLoc {
     const std::string TEXT;   //< Formatted as "[FILE:LINE]"
 
     // Empty location
-    SourceLoc() : TEXT{""}, EMPTY{true} {}
+    SourceLoc() : EMPTY{true}, TEXT {""} {}
 
     // Create from file and line
     SourceLoc(std::string_view file, int line)
-        : TEXT{std::format("[{}:{}]", file, line)}
-        , EMPTY{false}
+        : EMPTY{false}
+        , TEXT{std::format("[{}:{}]", file, line)}
     {}
 
     // Output location in gray
