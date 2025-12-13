@@ -37,42 +37,42 @@ static constexpr std::string_view CRITICAL_TAGS[] = {
     "[THRD]",
 };
 
-template <typename... Args>
 inline void caution(
-    CautionCode                 code,
-    SourceLoc                   loc,
-    std::format_string<Args...> f_str,
-    Args&&...                   args
+    CautionCode              code,
+    SourceLoc                loc,
+    log::internal::ProString msg
 ) noexcept {
     log::internal::_log(
         LogLevel::Warn,
-        "{}{}{}{}{}",
-        ColorText{CAUTION_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
-        config::TAG_TAG,
-        loc,
-        config::TAG_TAG,
-        std::format(f_str, std::forward<Args>(args)...)
+        log::internal::ProString {
+            "{}{}{}{}{}",
+            ColorText{CAUTION_TAGS[static_cast<size_t>(code)], ANSI::Yellow},
+            config::TAG_TAG,
+            loc,
+            config::TAG_TAG,
+            msg
+        }
     );
 }
 
-template <typename... Args>
 #ifndef ZUTILS_T
 [[noreturn]]
 #endif
 inline void critical(
-    CriticalCode                code,
-    SourceLoc                   loc,
-    std::format_string<Args...> f_str,
-    Args&&...                   args
+    CriticalCode             code,
+    SourceLoc                loc,
+    log::internal::ProString msg
 ) noexcept {
     log::internal::_log(
         LogLevel::Fatal,
-        "{}{}{}{}{}",
-        ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::BG_Red},
-        config::TAG_TAG,
-        loc,
-        config::TAG_TAG,
-        std::format(f_str, std::forward<Args>(args)...)
+        {
+            "{}{}{}{}{}",
+            ColorText{CRITICAL_TAGS[static_cast<size_t>(code)], ANSI::BG_Red},
+            config::TAG_TAG,
+            loc,
+            config::TAG_TAG,
+            msg
+        }
     );
 #ifndef ZUTILS_T
     config::killProcess();
@@ -86,8 +86,8 @@ inline void critical(
 #define   ZON_DEBUG  if constexpr ( ::zutils::config::IS_MODE_DEBUG)
 #define ZON_RELEASE  if constexpr (!::zutils::config::IS_MODE_DEBUG)
 
-#define  ZCAUTION(code, ...)  ::zutils::tools::caution (code, ZLOC, __VA_ARGS__)
-#define ZCRITICAL(code, ...)  ::zutils::tools::critical(code, ZLOC, __VA_ARGS__)
+#define  ZCAUTION(code, ...)  ::zutils::tools::caution (code, ZLOC, {__VA_ARGS__})
+#define ZCRITICAL(code, ...)  ::zutils::tools::critical(code, ZLOC, {__VA_ARGS__})
 
 #define        ZTODO(...)  ZCAUTION(::zutils::tools::CautionCode::Todo        , __VA_ARGS__)
 #define  ZDEPRECATED(...)  ZCAUTION(::zutils::tools::CautionCode::Deprecated  , __VA_ARGS__)

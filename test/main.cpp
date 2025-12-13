@@ -21,7 +21,8 @@ void run() {
     ZWARN_IF(!ok, "This warning will not appear");
 
     int counter = 123;
-    ZVAR(counter);
+    // ZVAR(counter);
+
     ZOUT << "=== LOGGING COMPLETE ===\n";
 }
 
@@ -156,8 +157,9 @@ void run()
 
 int main() {
     demo_log  ::run();
-    demo_trace::run();
-    demo_test ::run();
-    demo_tools::run();
+    // demo_trace::run();
+    // demo_test ::run();
+    // demo_tools::run();
+
     return 0;
 }

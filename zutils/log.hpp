@@ -14,6 +14,24 @@ namespace zutils::log {
 
 namespace internal {
 
+class ProString final {
+public:
+    const std::string TEXT;
+
+    ProString(std::string_view text) noexcept : TEXT {text} {}
+
+    template <typename... Args>
+    ProString(
+        std::format_string<Args...> f_str,
+        Args&&... args
+    ) noexcept : TEXT {std::format(f_str, std::forward<Args>(args)...)} {}
+
+    friend std::ostream &operator<<(std::ostream &os, const ProString &ps)
+    {
+        return os << ps.TEXT;
+    }
+};
+
 // Thread-safe logging guard with mutex lock
 struct LogGuard {
     std::scoped_lock<std::mutex> lock;  //< RAII mutex lock
@@ -60,7 +78,7 @@ static inline std::string_view getTimestamp() noexcept
 }
 
 // Internal log function with plain string
-inline void _log(LogLevel lvl, std::string_view msg) noexcept
+inline void _log(LogLevel lvl, ProString msg) noexcept
 {
     if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
     ColorText time = {internal::getTimestamp(), ANSI::EX_Black};
@@ -73,6 +91,7 @@ inline void _log(LogLevel lvl, std::string_view msg) noexcept
 }
 
 // Internal log function with format string
+#if 0
 template <typename... Args>
 inline void _log(
     LogLevel lvl,
@@ -84,16 +103,14 @@ inline void _log(
         std::format(f_str, std::forward<Args>(args)...)
     );
 }
+#endif
 
 } // namespace internal
 
 // Macro to generate logging functions for each level
-#define _LOG_FN(FN_NAME, LOG_LVL)                                                    \
-    template <typename... Args>                                                      \
-    inline void FN_NAME(std::format_string<Args...> f_str, Args&&... args)           \
-    { ::zutils::log::internal::_log(LOG_LVL, f_str, std::forward<Args>(args)...); }  \
-    inline void FN_NAME(std::string_view message)                                    \
-    { ::zutils::log::internal::_log(LOG_LVL, message); }                             \
+#define _LOG_FN(FN_NAME, LOG_LVL)                         \
+    inline void FN_NAME(internal::ProString message)      \
+    { ::zutils::log::internal::_log(LOG_LVL, message); }  \
 
     // Generate logging functions for each level
     _LOG_FN(trace, LogLevel::Trace)  //< Trace level logging
@@ -107,24 +124,37 @@ inline void _log(
 
 } // namespace zutils::log
 
+template <>
+struct std::formatter<zutils::log::internal::ProString> {
+    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+
+    auto format(
+        const zutils::log::internal::ProString &ps,
+        std::format_context &ctx
+    ) const
+    {
+        return std::format_to(ctx.out(), "{}", ps.TEXT);
+    }
+};
+
 /// MACROS:
 
 // Raw output with color reset
 #define ZOUT  std::cout << "\n" << ::zutils::config::COLOR_RESET
 
 // Standard logging
-#define   ZDBG(...)  ::zutils::log::dbg  (__VA_ARGS__)
-#define  ZINFO(...)  ::zutils::log::info (__VA_ARGS__)
-#define  ZWARN(...)  ::zutils::log::warn (__VA_ARGS__)
-#define   ZERR(...)  ::zutils::log::err  (__VA_ARGS__)
-#define ZFATAL(...)  ::zutils::log::fatal(__VA_ARGS__)
+#define   ZDBG(...)  ::zutils::log::dbg  ({__VA_ARGS__})
+#define  ZINFO(...)  ::zutils::log::info ({__VA_ARGS__})
+#define  ZWARN(...)  ::zutils::log::warn ({__VA_ARGS__})
+#define   ZERR(...)  ::zutils::log::err  ({__VA_ARGS__})
+#define ZFATAL(...)  ::zutils::log::fatal({__VA_ARGS__})
 
 // Conditional logging
-#define   ZDBG_IF(COND, ...)  do { if (COND) ::zutils::log::dbg  (__VA_ARGS__); } while (0)
-#define  ZINFO_IF(COND, ...)  do { if (COND) ::zutils::log::info (__VA_ARGS__); } while (0)
-#define  ZWARN_IF(COND, ...)  do { if (COND) ::zutils::log::warn (__VA_ARGS__); } while (0)
-#define   ZERR_IF(COND, ...)  do { if (COND) ::zutils::log::err  (__VA_ARGS__); } while (0)
-#define ZFATAL_IF(COND, ...)  do { if (COND) ::zutils::log::fatal(__VA_ARGS__); } while (0)
+#define   ZDBG_IF(COND, ...)  do { if (COND)   ZDBG(__VA_ARGS__); } while (0)
+#define  ZINFO_IF(COND, ...)  do { if (COND)  ZINFO(__VA_ARGS__); } while (0)
+#define  ZWARN_IF(COND, ...)  do { if (COND)  ZWARN(__VA_ARGS__); } while (0)
+#define   ZERR_IF(COND, ...)  do { if (COND)   ZERR(__VA_ARGS__); } while (0)
+#define ZFATAL_IF(COND, ...)  do { if (COND) ZFATAL(__VA_ARGS__); } while (0)
 
 // Debug variable with name and value
 #define ZVAR(VAR) \
