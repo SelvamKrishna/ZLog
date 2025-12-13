@@ -14,20 +14,25 @@ namespace zutils::log {
 
 namespace internal {
 
+// String class which supports regular and format strings
 class ProString final {
 public:
     const std::string TEXT;
 
+    // Regular string constructor
     ProString(std::string_view text) noexcept : TEXT {text} {}
 
+    // Format string constructor
     template <typename... Args>
     ProString(std::format_string<Args...> f_str, Args&&... args) noexcept
     : TEXT {std::format(f_str, std::forward<Args>(args)...)}
     {}
 
+    // True is no text is provided
     [[nodiscard]]
     constexpr bool isEmpty() const noexcept { return TEXT == ""; }
 
+    // Ostream support
     friend std::ostream &operator<<(std::ostream &os, const ProString &ps)
     {
         return os << ps.TEXT;
@@ -116,6 +121,7 @@ inline void _log(LogLevel lvl, ProString msg) noexcept
 
 } // namespace zutils::log
 
+// std::format support for ProString
 template <>
 struct std::formatter<zutils::log::internal::ProString> {
     constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
@@ -154,5 +160,5 @@ struct std::formatter<zutils::log::internal::ProString> {
         "({}) = {}",                                           \
         ::zutils::ColorText { #VAR, ::zutils::ANSI::Magenta }, \
         (VAR)                                                  \
-    )                                                          \
+    );                                                         \
 } while (0)

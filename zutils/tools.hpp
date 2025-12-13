@@ -22,19 +22,19 @@ enum class CriticalCode : uint8_t {
 };
 
 static constexpr std::string_view CAUTION_TAGS[] = {
-    "[TODO]",
-    "[DEPR]",
-    "[OPTM]",
-    "[SCRT]",
-    "[PERF]",
+    "[TODO]"        ,
+    "[DEPRECATED]"  ,
+    "[OPTIMIZATION]",
+    "[SECURITY]"    ,
+    "[PERFORMANCE]" ,
 };
 
 static constexpr std::string_view CRITICAL_TAGS[] = {
-    "[UNRC]",
-    "[NIMP]",
-    "[FIXM]",
-    "[MEMO]",
-    "[THRD]",
+    "[UNREACHABLE]"   ,
+    "[UNIMPLEMENTED]" ,
+    "[FIX_ME]"        ,
+    "[MEMORY]"        ,
+    "[THREAD_SAFETY]" ,
 };
 
 inline void caution(

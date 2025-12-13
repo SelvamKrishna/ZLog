@@ -10,18 +10,24 @@ namespace demo_log {
 void run() {
     ZOUT << "=== LOGGING SHOWCASE ===\n\n";
 
-    ZDBG("Debug message: x = {}", 42);
-    ZINFO("Info: startup phase {}", "initializing");
-    ZWARN("Warning: value {} near limit", 95);
-    ZERR("Error: missing file '{}'", "config.ini");
-    ZFATAL("Fatal: component {} failed", "Renderer");
+    int x = 42;
+    const char* phase = "initializing";
+    int near_limit = 95;
+    const char* missing = "config.ini";
+    const char* component = "Renderer";
+
+    ZDBG("Debug message: x = {}", x);
+    ZINFO("Info: startup phase {}", phase);
+    ZWARN("Warning: value {} near limit", near_limit);
+    ZERR("Error: missing file '{}'", missing);
+    ZFATAL("Fatal: component {} failed", component);
 
     bool ok = true;
     ZINFO_IF(ok, "Conditional log when ok = {}", ok);
-    ZWARN_IF(!ok, "This warning will not appear");
+    ZWARN_IF(!ok, "This warning will not appear (ok = {})", ok);
 
     int counter = 123;
-    // ZVAR(counter);
+    ZVAR(counter);
 
     ZOUT << "=== LOGGING COMPLETE ===\n";
 }
@@ -32,18 +38,18 @@ namespace demo_trace {
 
 void simple() {
     ZTRC;
-    ZINFO("Inside simple() function");
+    ZINFO("Inside {}() function", "simple");
 }
 
 void custom() {
     ZTRC_S("Loading Resources");
-    ZDBG("Pretend resource loading here...");
+    ZDBG("Pretend resource loading: {} items", 3);
 }
 
 struct DemoClass {
     void method() {
         ZTRC_C(DemoClass);
-        ZINFO("Inside DemoClass::method()");
+        ZINFO("Inside {}::{}()", "DemoClass", "method");
     }
 };
 
@@ -52,18 +58,18 @@ void nested() {
 
     {
         ZTRC_S("Inner A");
-        ZDBG("Working inside A");
+        ZDBG("Working inside {}", "A");
     }
     {
         ZTRC_S("Inner B");
-        ZDBG("Working inside B");
+        ZDBG("Working inside {}", "B");
     }
 }
 
 void lambdaTest() {
     auto fn = []() {
         ZTRC_S("Lambda Execution");
-        ZINFO("Inside lambda");
+        ZINFO("Inside {}", "lambda");
     };
     fn();
 }
@@ -90,34 +96,28 @@ namespace demo_test {
 void run() {
     ZOUT << "=== TESTING SHOWCASE ===\n\n";
 
-    // Unit Tests
-    ZOUT << "\n-- UNIT TESTS --\n";
+    ZOUT << "\n-- UNIT TESTS ---\n";
     ZTEST(1 + 1 == 2);
-    ZTEST_S(2 * 3 == 6, "multiplication");
+    ZTEST_S(2 * 3 == 6, "{}", "multiplication");
 
-    // Example intentional fail
-    ZTEST_S(2 + 2 == 5, "intentional fail example");
+    ZTEST_S(2 + 2 == 5, "intentional fail: {} + {} != {}", 2, 2, 5);
 
-    // Expectations
-    ZOUT << "\n-- EXPECTATIONS --\n";
+    ZOUT << "\n-- EXPECTATIONS ---\n";
     ZEXPECT(10 > 1);
-    ZEXPECT_S(4 > 9, "intentional expect warn");
+    ZEXPECT_S(4 > 9, "intentional expect warn: {} > {}", 4, 9);
 
-    // Asserts
-    ZOUT << "\n-- ASSERTS --\n";
+    ZOUT << "\n-- ASSERTS ---\n";
     ZASSERT(3 * 3 == 9);
-    ZASSERT_S(3 * 3 == 8, "intentional debug assert fail");
+    ZASSERT_S(3 * 3 == 8, "intentional assert fail: {} * {} != {}", 3, 3, 8);
 
-    // Verifies
-    ZOUT << "\n-- VERIFIES --\n";
+    ZOUT << "\n-- VERIFIES ---\n";
     ZVERIFY(3 * 3 == 9);
-    ZVERIFY_S(3 * 3 == 8, "intentional verify fail");
+    ZVERIFY_S(3 * 3 == 8, "intentional verify fail: {} * {} != {}", 3, 3, 8);
 
-    // Panic
-    ZOUT << "\n-- PANIC --\n";
-    ZPANIC("demonstration panic");
-    ZPANIC_IF(false, "Shouldn't show");
-    ZPANIC_IF(true, "Should show");
+    ZOUT << "\n-- PANIC ---\n";
+    ZPANIC("demonstration panic: code {}", 1);
+    ZPANIC_IF(false, "Shouldn't show: flag = {}", false);
+    ZPANIC_IF(true, "Should show: flag = {}", true);
 
     ZOUT << "=== TESTING COMPLETE ===\n";
 }
@@ -126,25 +126,22 @@ void run() {
 
 namespace demo_tools {
 
-void run()
-{
+void run() {
     ZOUT << "\n--- CAUTION EXAMPLES ---\n";
 
-    ZTODO("Implement proper input validation");
-    ZDEPRECATED("This function will be removed in the next release");
-    ZOPTIMIZE("Loop can be vectorized for better performance");
-    ZSECURITY("Check user authentication before proceeding");
-    ZPERFORMANCE("Consider caching results to reduce computation");
+    ZTODO("{}", "Implement proper input validation");
+    ZDEPRECATED("{}", "This function will be removed in the next release");
+    ZOPTIMIZE("{}", "Loop can be vectorized for better performance");
+    ZSECURITY("{}", "Check user authentication before proceeding");
+    ZPERFORMANCE("{}", "Consider caching results to reduce computation");
 
     ZOUT << "\n--- CRITICAL EXAMPLES ---\n";
 
-    // The following normally abort, but in demo/testing builds
-    // killProcess() can be no-op for showcase purposes.
-    ZUNREACHABLE("Reached supposedly unreachable code block");
-    ZUNIMPLEMENTED("This feature is not implemented yet");
-    ZFIXME("Fix edge case when input is negative");
-    ZMEMORY("Detected potential memory leak in buffer allocation");
-    ZTHREAD_SAFETY("Potential data race detected on shared resource");
+    ZUNREACHABLE("Reached supposedly unreachable code block: {}", 0xDEAD);
+    ZUNIMPLEMENTED("This feature '{}' is not implemented yet", "Hot Reload");
+    ZFIXME("Fix edge case when input is {}", "negative");
+    ZMEMORY("Detected potential memory leak in {}", "buffer allocation");
+    ZTHREAD_SAFETY("Potential data race on {}", "shared resource");
 
     ZOUT << "\n--- SHOWCASE COMPLETE ---\n";
 }
