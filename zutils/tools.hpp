@@ -86,8 +86,8 @@ inline void critical(
 #define   ZON_DEBUG  if constexpr ( ::zutils::config::IS_MODE_DEBUG)
 #define ZON_RELEASE  if constexpr (!::zutils::config::IS_MODE_DEBUG)
 
-#define  ZCAUTION(code, ...)  ::zutils::tools::caution (code, ZLOC, {__VA_ARGS__})
-#define ZCRITICAL(code, ...)  ::zutils::tools::critical(code, ZLOC, {__VA_ARGS__})
+#define  ZCAUTION(code, ...)  do { ::zutils::tools::caution (code, ZLOC, {__VA_ARGS__}); } while (0)
+#define ZCRITICAL(code, ...)  do { ::zutils::tools::critical(code, ZLOC, {__VA_ARGS__}); } while (0)
 
 #define        ZTODO(...)  ZCAUTION(::zutils::tools::CautionCode::Todo        , __VA_ARGS__)
 #define  ZDEPRECATED(...)  ZCAUTION(::zutils::tools::CautionCode::Deprecated  , __VA_ARGS__)

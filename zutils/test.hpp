@@ -23,9 +23,9 @@ namespace internal {
 
 [[nodiscard]]
 inline std::string _fmtSimpleStr(
-    const ColorText&         tag,
-    log::internal::ProString desc,
-    const SourceLoc&         loc
+    const ColorText& tag,
+    log::internal::ProString& desc,
+    const SourceLoc& loc
 ) noexcept {
     return desc.isEmpty()
     ? std::format(
@@ -43,10 +43,10 @@ inline std::string _fmtSimpleStr(
 
 [[nodiscard]]
 inline std::string _fmtComplexStr(
-    const ColorText&         tag,
-    std::string_view         expr,
-    log::internal::ProString desc,
-    const SourceLoc&         loc
+    const ColorText& tag,
+    std::string_view expr,
+    log::internal::ProString& desc,
+    const SourceLoc& loc
 ) noexcept {
     return desc.isEmpty()
     ? std::format(
@@ -68,21 +68,21 @@ inline std::string _fmtComplexStr(
 
 /// Unit test assertion (always runs in tests)
 
-inline void test(bool condition, std::string_view desc) noexcept
+inline void test(bool condition, log::internal::ProString desc) noexcept
 {
     ZOUT
     << _TAG_OS(config::TEST_TAG)
     << _TAG_OS(condition ? config::PASS_TAG : config::FAIL_TAG)
-    << _EXPR(desc);
+    << _EXPR(desc.TEXT);
 }
 
-inline void test(bool condition, std::string_view expr, std::string_view desc) noexcept
+inline void test(bool condition, std::string_view expr, log::internal::ProString desc) noexcept
 {
     ZOUT
     << _TAG_OS(config::TEST_TAG)
     << _TAG_OS(condition ? config::PASS_TAG : config::FAIL_TAG)
     << _TAG_OS(_EXPR(expr))
-    << _DESC(desc);
+    << _DESC(desc.TEXT);
 }
 
 #undef _TAG_OS
@@ -94,7 +94,7 @@ inline void test(bool condition, std::string_view expr, std::string_view desc) n
 
 inline void expect(
     bool condition,
-    std::string_view desc,
+    log::internal::ProString desc,
     SourceLoc loc = {}
 ) noexcept
 {
@@ -105,7 +105,7 @@ inline void expect(
 inline void expect(
     bool condition,
     std::string_view expr,
-    std::string_view desc,
+    log::internal::ProString desc,
     SourceLoc loc = {}
 ) noexcept
 {
@@ -117,7 +117,7 @@ inline void expect(
 
 inline void assert(
     bool condition,
-    std::string_view desc,
+    log::internal::ProString desc,
     SourceLoc loc = {}
 ) noexcept
 {
@@ -130,7 +130,7 @@ inline void assert(
 inline void assert(
     bool condition,
     std::string_view expr,
-    std::string_view desc,
+    log::internal::ProString desc,
     SourceLoc loc = {}
 ) noexcept
 {
@@ -144,7 +144,7 @@ inline void assert(
 
 inline void verify(
     bool condition,
-    std::string_view desc,
+    log::internal::ProString desc,
     SourceLoc loc = {}
 ) noexcept
 {
@@ -156,7 +156,7 @@ inline void verify(
 inline void verify(
     bool condition,
     std::string_view expr,
-    std::string_view desc,
+    log::internal::ProString desc,
     SourceLoc loc = {}
 ) noexcept
 {
@@ -169,7 +169,7 @@ inline void verify(
 #ifndef ZUTILS_T
 [[noreturn]]
 #endif
-inline void panic(std::string_view desc, SourceLoc loc = {}) noexcept
+inline void panic(log::internal::ProString desc, SourceLoc loc = {}) noexcept
 {
     ZFATAL(internal::_fmtSimpleStr(config::PANIC_TAG, desc, loc));
     config::killProcess();
@@ -180,39 +180,30 @@ inline void panic(std::string_view desc, SourceLoc loc = {}) noexcept
 /// MACROS:
 
 // Unit testing
-#define      ZTEST(COND)         ::zutils::test::test((COND), #COND)
-#define    ZTEST_S(COND, DESC)   ::zutils::test::test((COND), #COND, DESC)
-#define   ZTEST_EQ(ACT, EXP)     ZTEST(ACT == EXP)
-#define   ZTEST_NE(ACT, EXP)     ZTEST(ACT != EXP)
+#define      ZTEST(COND)       do { ::zutils::test::test((COND), {#COND});                } while (0)
+#define    ZTEST_S(COND, ...)  do { ::zutils::test::test((COND), (#COND), {__VA_ARGS__}); } while (0)
+
 // Non fatal checking
-#define    ZEXPECT(COND)         ::zutils::test::expect((COND), #COND, ZLOC)
-#define  ZEXPECT_S(COND, DESC)   ::zutils::test::expect((COND), #COND, DESC, ZLOC)
-#define ZEXPECT_EQ(ACT, EXP)     ZEXPECT(ACT == EXP)
-#define ZEXPECT_NE(ACT, EXP)     ZEXPECT(ACT != EXP)
+#define    ZEXPECT(COND)       do { ::zutils::test::expect((COND), {#COND},                ZLOC); } while (0)
+#define  ZEXPECT_S(COND, ...)  do { ::zutils::test::expect((COND), (#COND), {__VA_ARGS__}, ZLOC); } while (0)
 
 #ifdef NDEBUG
 
-#define    ZASSERT(COND)         (void(0))
-#define  ZASSERT_S(COND, DESC)   (void(0))
-#define ZASSERT_EQ(ACT, EXP)     (void(0))
-#define ZASSERT_NE(ACT, EXP)     (void(0))
+#define    ZASSERT(COND)       (void(0))
+#define  ZASSERT_S(COND, ...)  (void(0))
 
 #else
 
 // Fatal debug only checking
-#define    ZASSERT(COND)         ::zutils::test::assert((COND), #COND, ZLOC)
-#define  ZASSERT_S(COND, DESC)   ::zutils::test::assert((COND), #COND, DESC, ZLOC)
-#define ZASSERT_EQ(ACT, EXP)     ZASSERT(ACT == EXP)
-#define ZASSERT_NE(ACT, EXP)     ZASSERT(ACT != EXP)
+#define    ZASSERT(COND)       do { ::zutils::test::assert((COND), {#COND},                ZLOC); } while (0)
+#define  ZASSERT_S(COND, ...)  do { ::zutils::test::assert((COND), (#COND), {__VA_ARGS__}, ZLOC); } while (0)
 
 #endif
 
 // Fatal checking
-#define    ZVERIFY(COND)         ::zutils::test::verify((COND), #COND, ZLOC)
-#define  ZVERIFY_S(COND, DESC)   ::zutils::test::verify((COND), #COND, DESC, ZLOC)
-#define ZVERIFY_EQ(ACT, EXP)     ZVERIFY(ACT == EXP)
-#define ZVERIFY_NE(ACT, EXP)     ZVERIFY(ACT != EXP)
+#define    ZVERIFY(COND)       do { ::zutils::test::verify((COND), {#COND},                ZLOC); } while (0)
+#define  ZVERIFY_S(COND, ...)  do { ::zutils::test::verify((COND), (#COND), {__VA_ARGS__}, ZLOC); } while (0)
 
 // Terminates process with message
-#define    ZPANIC(DESC)                  ::zutils::test::panic(DESC, ZLOC)
-#define ZPANIC_IF(COND, DESC)  if (COND) ::zutils::test::panic(DESC, ZLOC)
+#define    ZPANIC(...)        do {           ::zutils::test::panic({__VA_ARGS__}, ZLOC); } while (0)
+#define ZPANIC_IF(COND, ...)  do { if (COND) ::zutils::test::panic({__VA_ARGS__}, ZLOC); } while (0)

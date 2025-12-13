@@ -212,4 +212,4 @@ struct std::formatter<zutils::SourceLoc> {
 
 // Create `SourceLoc` for current location
 #define ZLOC \
-    ::zutils::SourceLoc {__FILE__, __LINE__}
+    { ::zutils::SourceLoc {__FILE__, __LINE__} }

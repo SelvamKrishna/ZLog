@@ -94,8 +94,6 @@ void run() {
     ZOUT << "\n-- UNIT TESTS --\n";
     ZTEST(1 + 1 == 2);
     ZTEST_S(2 * 3 == 6, "multiplication");
-    ZTEST_EQ(5, 5);
-    ZTEST_NE(5, 7);
 
     // Example intentional fail
     ZTEST_S(2 + 2 == 5, "intentional fail example");
