@@ -23,11 +23,11 @@ namespace internal {
 
 [[nodiscard]]
 inline std::string _fmtSimpleStr(
-    const ColorText& tag,
-    std::string_view desc,
-    const SourceLoc& loc
+    const ColorText&         tag,
+    log::internal::ProString desc,
+    const SourceLoc&         loc
 ) noexcept {
-    return desc.empty()
+    return desc.isEmpty()
     ? std::format(
         "{}{}{}",
         _TAG_COMM(tag),
@@ -37,18 +37,18 @@ inline std::string _fmtSimpleStr(
         "{}{}{}{}{}",
         _TAG_COMM(tag),
         _TAG_COMM(loc),
-        _DESC(desc)
+        _DESC(desc.TEXT)
     );
 }
 
 [[nodiscard]]
 inline std::string _fmtComplexStr(
-    const ColorText& tag,
-    std::string_view expr,
-    std::string_view desc,
-    const SourceLoc& loc
+    const ColorText&         tag,
+    std::string_view         expr,
+    log::internal::ProString desc,
+    const SourceLoc&         loc
 ) noexcept {
-    return desc.empty()
+    return desc.isEmpty()
     ? std::format(
         "{}{}{}{}{}",
         _TAG_COMM(tag),
@@ -60,7 +60,7 @@ inline std::string _fmtComplexStr(
         _TAG_COMM(tag),
         _TAG_COMM(loc),
         _TAG_COMM(_EXPR(expr)),
-        _DESC(desc)
+        _DESC(desc.TEXT)
     );
 }
 

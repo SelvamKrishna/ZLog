@@ -157,9 +157,9 @@ void run()
 
 int main() {
     demo_log  ::run();
-    // demo_trace::run();
-    // demo_test ::run();
-    // demo_tools::run();
+    demo_trace::run();
+    demo_test ::run();
+    demo_tools::run();
 
     return 0;
 }

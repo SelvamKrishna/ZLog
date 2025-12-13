@@ -30,10 +30,10 @@ static constexpr std::string_view CAUTION_TAGS[] = {
 };
 
 static constexpr std::string_view CRITICAL_TAGS[] = {
-    "[URCH]",
-    "[UIMP]",
+    "[UNRC]",
+    "[NIMP]",
     "[FIXM]",
-    "[MEMR]",
+    "[MEMO]",
     "[THRD]",
 };
 

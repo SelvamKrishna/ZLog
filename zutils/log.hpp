@@ -30,6 +30,9 @@ public:
     {
         return os << ps.TEXT;
     }
+
+    [[nodiscard]]
+    constexpr bool isEmpty() const noexcept { return TEXT == ""; }
 };
 
 // Thread-safe logging guard with mutex lock
@@ -59,8 +62,6 @@ inline LogGuard logStream(LogLevel level) noexcept
 [[nodiscard]]
 static inline std::string_view getTimestamp() noexcept
 {
-    if constexpr (!config::ENABLE_TIMESTAMP) return "";
-
     auto now = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
     std::tm tm_struct{};
@@ -77,33 +78,25 @@ static inline std::string_view getTimestamp() noexcept
     return std::string_view{buf, sizeof("[HH:MM:SS]")};
 }
 
-// Internal log function with plain string
+// Internal log function
 inline void _log(LogLevel lvl, ProString msg) noexcept
 {
     if (config::DISABLE_LOGGING || lvl < config::MIN_LEVEL) return;
-    ColorText time = {internal::getTimestamp(), ANSI::EX_Black};
 
-    internal::logStream(lvl).os
-        << config::COLOR_RESET
-        << time << config::TAG_TAG
+    LogGuard log_gaurd = internal::logStream(lvl);
+    log_gaurd.os << config::COLOR_RESET;
+
+    if constexpr (config::ENABLE_TIMESTAMP)
+    {
+        log_gaurd.os
+            << ColorText{internal::getTimestamp(), ANSI::EX_Black}
+            << config::TAG_TAG;
+    }
+
+    log_gaurd.os
         << config::TAG_CTX[static_cast<int>(lvl)]
         << config::TAG_TAG << msg << "\n";
 }
-
-// Internal log function with format string
-#if 0
-template <typename... Args>
-inline void _log(
-    LogLevel lvl,
-    std::format_string<Args...> f_str,
-    Args&&... args
-) noexcept {
-    _log(
-        lvl,
-        std::format(f_str, std::forward<Args>(args)...)
-    );
-}
-#endif
 
 } // namespace internal
 
