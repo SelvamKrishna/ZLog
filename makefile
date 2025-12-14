@@ -4,7 +4,7 @@ CXXFLAGS := -std=c++23 -I.
 TEST_SRC := .\test\main.cpp
 TEST_BIN := .\test\test
 
-TEST_FLAG := ZUTILS_T
+TEST_FLAG := ZLOG_T
 
 .PHONY: all final run
 

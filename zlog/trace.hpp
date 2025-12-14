@@ -6,7 +6,7 @@
 #include <format>
 #include <string>
 
-namespace zutils::trace {
+namespace zlog {
 
 // Uses RAII to log tracing messages of a scope
 struct ScopeTracer {
@@ -21,7 +21,7 @@ public:
         : STR_TEXT{std::move(text)}
         , TEXT{STR_TEXT, (config::ENABLE_TRACE_DULL) ? ANSI::EX_Black : ANSI::Reset}
     {
-        log::internal::_log(
+        internal::_log(
             LogLevel::Trace,
             {"{}{}{}", config::TRACE_IN_TAG, config::TAG_TAG, TEXT}
         );
@@ -30,21 +30,21 @@ public:
     // Scope OUT
     ~ScopeTracer()
     {
-        log::internal::_log(
+        internal::_log(
             LogLevel::Trace,
             {"{}{}{}", config::TRACE_OUT_TAG, config::TAG_TAG, TEXT}
         );
     }
 };
 
-} // namespace zutils::trace
+} // namespace zlog
 
 /// MACROS:
 
 // For proper `ScopeTracer` construction
-#define ZTRC_ANON  ::zutils::trace::ScopeTracer ZTRACE_tracer_##__COUNTER__
+#define _ZTRC_ANON  ::zlog::ScopeTracer ZTRACE_tracer_##__COUNTER__
 
 // Scope tracing
-#define ZTRC         ZTRC_ANON {std::format("{}()", __FUNCTION__)}
-#define ZTRC_C(CLS)  ZTRC_ANON {std::format("{}::{}()", #CLS, __FUNCTION__)}
-#define ZTRC_S(DSC)  ZTRC_ANON {DSC}
+#define ZTRC         _ZTRC_ANON {std::format("{}()", __FUNCTION__)}
+#define ZTRC_C(CLS)  _ZTRC_ANON {std::format("{}::{}()", #CLS, __FUNCTION__)}
+#define ZTRC_S(DSC)  _ZTRC_ANON {DSC}

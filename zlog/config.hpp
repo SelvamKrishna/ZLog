@@ -4,7 +4,7 @@
 #include <ostream>
 #include <string_view>
 
-namespace zutils {
+namespace zlog {
 
 // Logging severity levels
 enum class LogLevel : uint8_t {
@@ -137,7 +137,7 @@ static constexpr bool IS_WINDOWS = false;
 #endif
 
 // Process termination (throws in test mode, aborts in production)
-#ifdef ZUTILS_T
+#ifdef ZLOG_T
 inline void killProcess() noexcept {} // Test mode - no termination
 #else
 [[noreturn]]
@@ -174,36 +174,36 @@ struct SourceLoc {
     }
 };
 
-} // namespace zutils
+} // namespace zlog
 
 // std::format support for ColorText
 template <>
-struct std::formatter<zutils::ColorText> {
+struct std::formatter<zlog::ColorText> {
   constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const zutils::ColorText &ct, std::format_context &ctx) const
+  auto format(const zlog::ColorText &color_text, std::format_context &ctx) const
   {
-    return (!zutils::config::ENABLE_COLOR)
-    ? std::format_to(ctx.out(), "{}", ct.TEXT)
+    return (!zlog::config::ENABLE_COLOR)
+    ? std::format_to(ctx.out(), "{}", color_text.TEXT)
     : std::format_to(
       ctx.out(),
       "\033[{}m{}\033[0m",
-      static_cast<int>(ct.COLOR), ct.TEXT
+      static_cast<int>(color_text.COLOR), color_text.TEXT
     );
   }
 };
 
 // std::format support for SourceLoc
 template <>
-struct std::formatter<zutils::SourceLoc> {
+struct std::formatter<zlog::SourceLoc> {
     constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-    auto format(const zutils::SourceLoc &sl, std::format_context &ctx) const
+    auto format(const zlog::SourceLoc &loc, std::format_context &ctx) const
     {
         return std::format_to(
             ctx.out(),
             "{}",
-            zutils::ColorText{sl.TEXT, zutils::ANSI::EX_Black}
+            zlog::ColorText{loc.TEXT, zlog::ANSI::EX_Black}
         );
     }
 };
@@ -211,5 +211,5 @@ struct std::formatter<zutils::SourceLoc> {
 /// MACROS:
 
 // Create `SourceLoc` for current location
-#define ZLOC \
-    { ::zutils::SourceLoc {__FILE__, __LINE__} }
+#define _ZSL \
+    { ::zlog::SourceLoc {__FILE__, __LINE__} }

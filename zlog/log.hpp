@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string_view>
 
-namespace zutils::log {
+namespace zlog {
 
 namespace internal {
 
@@ -18,6 +18,8 @@ namespace internal {
 class ProString final {
 public:
     const std::string TEXT;
+
+    ProString() noexcept : TEXT {""} {}
 
     // Regular string constructor
     ProString(std::string_view text) noexcept : TEXT {text} {}
@@ -105,9 +107,9 @@ inline void _log(LogLevel lvl, ProString msg) noexcept
 } // namespace internal
 
 // Macro to generate logging functions for each level
-#define _LOG_FN(FN_NAME, LOG_LVL)                         \
-    inline void FN_NAME(internal::ProString message)      \
-    { ::zutils::log::internal::_log(LOG_LVL, message); }  \
+#define _LOG_FN(FN_NAME, LOG_LVL)                     \
+    inline void FN_NAME(internal::ProString message)  \
+    { ::zlog::internal::_log(LOG_LVL, message); }     \
 
     // Generate logging functions for each level
     _LOG_FN(trace, LogLevel::Trace)
@@ -119,17 +121,14 @@ inline void _log(LogLevel lvl, ProString msg) noexcept
 
 #undef _LOG_FN
 
-} // namespace zutils::log
+} // namespace zlog
 
 // std::format support for ProString
 template <>
-struct std::formatter<zutils::log::internal::ProString> {
+struct std::formatter<zlog::internal::ProString> {
     constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-    auto format(
-        const zutils::log::internal::ProString &ps,
-        std::format_context &ctx
-    ) const
+    auto format(const zlog::internal::ProString &ps, std::format_context &ctx) const
     {
         return std::format_to(ctx.out(), "{}", ps.TEXT);
     }
@@ -138,14 +137,14 @@ struct std::formatter<zutils::log::internal::ProString> {
 /// MACROS:
 
 // Raw output with color reset
-#define ZOUT  std::cout << "\n" << ::zutils::config::COLOR_RESET
+#define ZOUT  std::cout << "\n" << ::zlog::config::COLOR_RESET
 
 // Standard logging
-#define   ZDBG(...)  do { ::zutils::log::dbg  ({__VA_ARGS__}); } while (0)
-#define  ZINFO(...)  do { ::zutils::log::info ({__VA_ARGS__}); } while (0)
-#define  ZWARN(...)  do { ::zutils::log::warn ({__VA_ARGS__}); } while (0)
-#define   ZERR(...)  do { ::zutils::log::err  ({__VA_ARGS__}); } while (0)
-#define ZFATAL(...)  do { ::zutils::log::fatal({__VA_ARGS__}); } while (0)
+#define   ZDBG(...)  do { ::zlog::dbg  ({__VA_ARGS__}); } while (0)
+#define  ZINFO(...)  do { ::zlog::info ({__VA_ARGS__}); } while (0)
+#define  ZWARN(...)  do { ::zlog::warn ({__VA_ARGS__}); } while (0)
+#define   ZERR(...)  do { ::zlog::err  ({__VA_ARGS__}); } while (0)
+#define ZFATAL(...)  do { ::zlog::fatal({__VA_ARGS__}); } while (0)
 
 // Conditional logging
 #define   ZDBG_IF(COND, ...)  do { if (COND)   ZDBG(__VA_ARGS__); } while (0)
@@ -155,10 +154,10 @@ struct std::formatter<zutils::log::internal::ProString> {
 #define ZFATAL_IF(COND, ...)  do { if (COND) ZFATAL(__VA_ARGS__); } while (0)
 
 // Debug variable with name and value
-#define ZVAR(VAR) do {                                         \
-    ZDBG(                                                      \
-        "({}) = {}",                                           \
-        ::zutils::ColorText { #VAR, ::zutils::ANSI::Magenta }, \
-        (VAR)                                                  \
-    );                                                         \
+#define ZVAR(VAR) do {                                     \
+    ZDBG(                                                  \
+        "{} = {}",                                         \
+        ::zlog::ColorText { #VAR, ::zlog::ANSI::Magenta }, \
+        (VAR)                                              \
+    );                                                     \
 } while (0)

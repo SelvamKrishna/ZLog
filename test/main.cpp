@@ -1,7 +1,4 @@
-#include "zutils/log.hpp"   // IWYU pragma: keep
-#include "zutils/test.hpp"  // IWYU pragma: keep
-#include "zutils/tools.hpp" // IWYU pragma: keep
-#include "zutils/trace.hpp" // IWYU pragma: keep
+#include <zlog_v2.hpp>
 
 #if 1
 
@@ -98,21 +95,20 @@ void run() {
 
     ZOUT << "\n-- UNIT TESTS ---\n";
     ZTEST(1 + 1 == 2);
-    ZTEST_S(2 * 3 == 6, "{}", "multiplication");
-
-    ZTEST_S(2 + 2 == 5, "intentional fail: {} + {} != {}", 2, 2, 5);
+    ZTEST(2 * 3 == 6, "{}", "multiplication");
+    ZTEST(2 + 2 == 5, "intentional fail: {} + {} != {}", 2, 2, 5);
 
     ZOUT << "\n-- EXPECTATIONS ---\n";
     ZEXPECT(10 > 1);
-    ZEXPECT_S(4 > 9, "intentional expect warn: {} > {}", 4, 9);
+    ZEXPECT(4 > 9, "intentional expect warn: {} > {}", 4, 9);
 
     ZOUT << "\n-- ASSERTS ---\n";
     ZASSERT(3 * 3 == 9);
-    ZASSERT_S(3 * 3 == 8, "intentional assert fail: {} * {} != {}", 3, 3, 8);
+    ZASSERT(3 * 3 == 8, "intentional assert fail: {} * {} != {}", 3, 3, 8);
 
     ZOUT << "\n-- VERIFIES ---\n";
     ZVERIFY(3 * 3 == 9);
-    ZVERIFY_S(3 * 3 == 8, "intentional verify fail: {} * {} != {}", 3, 3, 8);
+    ZVERIFY(3 * 3 == 8, "intentional verify fail: {} * {} != {}", 3, 3, 8);
 
     ZOUT << "\n-- PANIC ---\n";
     ZPANIC("demonstration panic: code {}", 1);
