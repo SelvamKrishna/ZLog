@@ -17,8 +17,8 @@ public:
     const ColorText TEXT;  //< Colored tracing message
 
     // Scope IN
-    explicit ScopeTracer(std::string text)
-        : STR_TEXT{std::move(text)}
+    explicit ScopeTracer(internal::ProString text)
+        : STR_TEXT{std::move(text.TEXT)}
         , TEXT{STR_TEXT, (config::ENABLE_TRACE_DULL) ? ANSI::EX_Black : ANSI::Reset}
     {
         internal::_log(
@@ -45,6 +45,6 @@ public:
 #define _ZTRC_ANON  ::zlog::ScopeTracer ZTRACE_tracer_##__COUNTER__
 
 // Scope tracing
-#define ZTRC         _ZTRC_ANON {std::format("{}()", __FUNCTION__)}
-#define ZTRC_C(CLS)  _ZTRC_ANON {std::format("{}::{}()", #CLS, __FUNCTION__)}
-#define ZTRC_S(DSC)  _ZTRC_ANON {DSC}
+#define ZTRC         _ZTRC_ANON { {     "{}()",       __FUNCTION__} }
+#define ZTRC_C(CLS)  _ZTRC_ANON { { "{}::{}()", #CLS, __FUNCTION__} }
+#define ZTRC_S(...)  _ZTRC_ANON { {__VA_ARGS__} }

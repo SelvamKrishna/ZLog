@@ -179,18 +179,18 @@ struct SourceLoc {
 // std::format support for ColorText
 template <>
 struct std::formatter<zlog::ColorText> {
-  constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
+    constexpr auto parse(std::format_parse_context &ctx) { return ctx.begin(); }
 
-  auto format(const zlog::ColorText &color_text, std::format_context &ctx) const
-  {
-    return (!zlog::config::ENABLE_COLOR)
-    ? std::format_to(ctx.out(), "{}", color_text.TEXT)
-    : std::format_to(
-      ctx.out(),
-      "\033[{}m{}\033[0m",
-      static_cast<int>(color_text.COLOR), color_text.TEXT
-    );
-  }
+    auto format(const zlog::ColorText &color_text, std::format_context &ctx) const
+    {
+        return (!zlog::config::ENABLE_COLOR)
+        ? std::format_to(ctx.out(), "{}", color_text.TEXT)
+        : std::format_to(
+            ctx.out(),
+            "\033[{}m{}\033[0m",
+            static_cast<int>(color_text.COLOR), color_text.TEXT
+        );
+    }
 };
 
 // std::format support for SourceLoc

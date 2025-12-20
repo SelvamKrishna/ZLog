@@ -1,4 +1,7 @@
-#include <zlog_v2.hpp>
+#include "zlog/log.hpp"
+#include "zlog/test.hpp"
+#include "zlog/tools.hpp"
+#include "zlog/trace.hpp"
 
 #if 1
 
@@ -39,7 +42,7 @@ void simple() {
 }
 
 void custom() {
-    ZTRC_S("Loading Resources");
+    ZTRC_S("Loading Resources {}", 42);
     ZDBG("Pretend resource loading: {} items", 3);
 }
 

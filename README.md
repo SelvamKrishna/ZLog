@@ -4,6 +4,8 @@ A lightweight, header-only C++ utility library providing logging, testing, traci
 
 Customizable via `zlog/config.hpp` for flexible integration into various projects.
 
+Run `build/py` to combine library to single header file
+
 |Overview|Features|
 |---|---|
 |[Logging System](#logging-system-zlogloghpp)|Thread-safe logging with multiple log levels, ANSI color support, timestamp formatting, conditional logging macros, variable debugging, and default logging.|
