@@ -4,7 +4,7 @@ A lightweight, header-only C++ utility library providing logging, testing, traci
 
 Customizable via `zlog/config.hpp` for flexible integration into various projects.
 
-Run `build/py` to combine library to single header file
+Run `build.py` to combine library to single header file
 
 |Overview|Features|
 |---|---|
